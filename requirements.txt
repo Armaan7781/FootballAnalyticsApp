@@ -1,4 +1,8 @@
 streamlit
-pandasplotly.express
-plotly.graph_objects
-numpy
+pandas
+plotly
+statsbombpy
+mplsoccer
+matplotlib
+statsmodels
+scipy
