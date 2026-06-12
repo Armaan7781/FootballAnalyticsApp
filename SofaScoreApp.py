@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ═══════════════════════════════════════════════════════════════
-# DARK THEME CSS & TYPOGRAPHY - ELITE SCOUTING VIBE
+# DARK THEME CSS & TYPOGRAPHY - UNIFIED TACTICAL WORKSPACE
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
     <style>
@@ -34,7 +34,7 @@ st.markdown("""
             /* ACCENTS */
             --accent-primary: #00B8C9;
             --accent-secondary: #37E6F7;
-            --accent-tertiary: #E8F5E9; /* Subdued mint for exceptional/highlighted data */
+            --accent-tertiary: #E8F5E9;
             --accent-muted: #145D6D;
 
             /* TEXT */
@@ -43,11 +43,34 @@ st.markdown("""
             --text-muted: #6C8594;
         }
 
-        /* Global Typography */
-        html, body, [class*="css"] {
+        /* -----------------------------------------------------------------
+           CORE LAYOUT OVERRIDES (KILLING ALL WHITE BACKGROUNDS)
+           ----------------------------------------------------------------- */
+        html, body {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
             font-family: 'Inter', sans-serif;
-            color: var(--text-primary);
-            background-color: var(--bg-primary);
+        }
+        
+        .stApp, .stAppViewContainer, .stAppViewBlockContainer {
+            background-color: var(--bg-primary) !important;
+        }
+        
+        .main, .block-container, [data-testid="stVerticalBlock"] {
+            background-color: transparent !important;
+        }
+
+        header[data-testid="stHeader"] {
+            background-color: transparent !important;
+        }
+
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {
+            background-color: var(--bg-sidebar) !important;
+            border-right: 1px solid var(--accent-muted) !important;
+        }
+        [data-testid="stSidebarHeader"], [data-testid="stSidebarContent"] {
+            background-color: var(--bg-sidebar) !important;
         }
 
         /* Main Headers */
@@ -59,23 +82,9 @@ st.markdown("""
             text-transform: uppercase;
         }
 
-        /* Sidebar Styling */
-        [data-testid="stSidebar"] {
-            background-color: var(--bg-sidebar) !important;
-            border-right: 1px solid var(--accent-muted) !important;
-        }
-        
-        [data-testid="stSidebarHeader"] {
-            background-color: var(--bg-sidebar) !important;
-        }
-
-        [data-testid="stSidebarContent"] {
-            background-color: var(--bg-sidebar) !important;
-        }
-
-        /* KPI Cards Styling - Tactical sharp corners */
+        /* KPI Cards Styling */
         [data-testid="stMetric"] {
-            background-color: var(--bg-card);
+            background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
             border-radius: 0px !important;
             padding: 16px;
@@ -85,7 +94,7 @@ st.markdown("""
         }
 
         [data-testid="stMetric"]:hover {
-            background-color: var(--bg-card-hover);
+            background-color: var(--bg-card-hover) !important;
             border-left: 3px solid var(--accent-primary);
         }
 
@@ -105,7 +114,7 @@ st.markdown("""
             line-height: 1.1;
         }
 
-        /* Tabs Styling (Professional Scouting App Vibe) */
+        /* Tabs Styling */
         [data-testid="stTabs"] button {
             background-color: transparent !important;
             border: none !important;
@@ -124,12 +133,19 @@ st.markdown("""
             color: var(--text-primary) !important;
             background-color: rgba(0, 184, 201, 0.05) !important;
         }
+        
+        [data-testid="stTabContent"] {
+            background-color: transparent !important;
+        }
 
         /* DataFrames Styling */
         [data-testid="stDataFrame"] {
-            background-color: var(--bg-card);
-            border: 1px solid var(--accent-muted);
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--accent-muted) !important;
             border-radius: 0px !important;
+        }
+        [data-testid="stDataFrame"] > div {
+            background-color: var(--bg-card) !important;
         }
 
         .stDataFrame {
@@ -155,6 +171,10 @@ st.markdown("""
             opacity: 0.4;
             margin: 2.5rem 0;
         }
+        
+        /* General input overrides to match dark theme */
+        .stSelectbox > div > div { background-color: var(--bg-card) !important; color: var(--text-primary) !important; border: 1px solid var(--accent-muted) !important; }
+        .stMultiSelect > div > div { background-color: var(--bg-card) !important; color: var(--text-primary) !important; border: 1px solid var(--accent-muted) !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -218,7 +238,7 @@ def hex_to_rgba(hex_color, opacity):
 # CREATE HORIZONTAL BAR CHART (TACTICAL STYLING)
 # ═══════════════════════════════════════════════════════════════
 def create_horizontal_bar_chart(data_dict, title, colors_list=None):
-    """Create horizontal bar chart with tactical styling"""
+    """Create horizontal bar chart with tactical styling using custom colors only."""
     if colors_list is None:
         colors_list = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
     
@@ -236,7 +256,7 @@ def create_horizontal_bar_chart(data_dict, title, colors_list=None):
             text=[f'{v:.1f}' for v in values],
             textposition='auto',
             textfont=dict(family="JetBrains Mono", color="#030B12", weight="bold"),
-            hovertemplate='<b style="font-family: Bebas Neue; font-size: 16px;">%{y}</b><br><span style="font-family: JetBrains Mono;">%{x:.2f}</span><extra></extra>'
+            hovertemplate='<b style="font-family: Bebas Neue; font-size: 16px; color:#F5F7FA;">%{y}</b><br><span style="font-family: JetBrains Mono; color:#F5F7FA;">%{x:.2f}</span><extra></extra>'
         )
     ])
     
@@ -256,10 +276,10 @@ def create_horizontal_bar_chart(data_dict, title, colors_list=None):
         yaxis=dict(
             tickfont=dict(family="Inter", color="#F5F7FA", size=11, weight="bold")
         ),
-        template="plotly_dark",
-        height=400,
         paper_bgcolor="#0D1C25",
         plot_bgcolor="#0D1C25",
+        font=dict(color="#F5F7FA"),
+        height=400,
         showlegend=False,
         margin=dict(l=200, r=20, t=50, b=40)
     )
@@ -466,11 +486,11 @@ with tab1:
             radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
             angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
         ),
-        template="plotly_dark",
         title=dict(text="PROGRESSION RADAR BY COMPETITION", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-        height=500,
         paper_bgcolor="#0D1C25",
         plot_bgcolor="#0D1C25",
+        font=dict(color="#F5F7FA"),
+        height=500,
         legend=dict(font=dict(family="Inter", color="#A7BAC6", size=12))
     )
     st.plotly_chart(fig_radar_playmaking, use_container_width=True)
@@ -554,11 +574,11 @@ with tab1:
             radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
             angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
         ),
-        template="plotly_dark",
         title=dict(text="DEFENSIVE INTENSITY RADAR", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-        height=500,
         paper_bgcolor="#0D1C25",
         plot_bgcolor="#0D1C25",
+        font=dict(color="#F5F7FA"),
+        height=500,
         legend=dict(font=dict(family="Inter", color="#A7BAC6", size=12))
     )
     st.plotly_chart(fig_radar_defence, use_container_width=True)
@@ -755,11 +775,11 @@ with tab2:
                 radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
                 angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
             ),
-            template="plotly_dark",
             title=dict(text="CREATIVE INDEX RADAR", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-            height=500,
             paper_bgcolor="#0D1C25",
             plot_bgcolor="#0D1C25",
+            font=dict(color="#F5F7FA"),
+            height=500,
             legend=dict(font=dict(family="Inter", color="#A7BAC6", size=11))
         )
         st.plotly_chart(fig_radar_playmaking, use_container_width=True)
@@ -821,11 +841,11 @@ with tab2:
                 radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
                 angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
             ),
-            template="plotly_dark",
             title=dict(text="DEFENSIVE INTENSITY RADAR", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-            height=500,
             paper_bgcolor="#0D1C25",
             plot_bgcolor="#0D1C25",
+            font=dict(color="#F5F7FA"),
+            height=500,
             legend=dict(font=dict(family="Inter", color="#A7BAC6", size=11))
         )
         st.plotly_chart(fig_radar_def, use_container_width=True)
@@ -955,7 +975,7 @@ with tab3:
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"""
-                <div style='background-color: var(--bg-primary); border: 1px solid #145D6D; border-left: 6px solid #00B8C9; padding: 25px; margin-bottom: 20px;'>
+                <div style='background-color: var(--bg-card); border: 1px solid #145D6D; border-left: 6px solid #00B8C9; padding: 25px; margin-bottom: 20px;'>
                     <div style='color: #00B8C9; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue, sans-serif; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player1}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p1_data['team']} <span style='color: #145D6D;'>|</span> {p1_data['league_name']}</div>
@@ -964,7 +984,7 @@ with tab3:
         
         with col2:
             st.markdown(f"""
-                <div style='background-color: var(--bg-primary); border: 1px solid #145D6D; border-left: 6px solid #E8F5E9; padding: 25px; margin-bottom: 20px;'>
+                <div style='background-color: var(--bg-card); border: 1px solid #145D6D; border-left: 6px solid #E8F5E9; padding: 25px; margin-bottom: 20px;'>
                     <div style='color: #E8F5E9; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue, sans-serif; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player2}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} <span style='color: #145D6D;'>|</span> {p2_data['league_name']}</div>
@@ -1058,11 +1078,11 @@ with tab3:
                     radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
                     angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=14, color="#F5F7FA"))
                 ),
-                template="plotly_dark",
                 title=dict(text="CREATIVE INDEX RADAR", font=dict(family="Bebas Neue", size=18, color="#F5F7FA")),
+                paper_bgcolor="#0D1C25",
+                plot_bgcolor="#0D1C25",
+                font=dict(color="#F5F7FA"),
                 height=400,
-                paper_bgcolor="#030B12",
-                plot_bgcolor="#030B12",
                 legend=dict(font=dict(family="Inter", color="#A7BAC6", size=11))
             )
             st.plotly_chart(fig_playmaking, use_container_width=True)
@@ -1132,11 +1152,11 @@ with tab3:
                     radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
                     angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=14, color="#F5F7FA"))
                 ),
-                template="plotly_dark",
                 title=dict(text="DEFENSIVE INTENSITY RADAR", font=dict(family="Bebas Neue", size=18, color="#F5F7FA")),
+                paper_bgcolor="#0D1C25",
+                plot_bgcolor="#0D1C25",
+                font=dict(color="#F5F7FA"),
                 height=400,
-                paper_bgcolor="#030B12",
-                plot_bgcolor="#030B12",
                 legend=dict(font=dict(family="Inter", color="#A7BAC6", size=11))
             )
             st.plotly_chart(fig_defence, use_container_width=True)
@@ -1201,11 +1221,11 @@ with tab3:
                         radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
                         angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=14, color="#F5F7FA"))
                     ),
-                    template="plotly_dark",
                     title=dict(text="SHOT STOPPING RADAR", font=dict(family="Bebas Neue", size=18, color="#F5F7FA")),
+                    paper_bgcolor="#0D1C25",
+                    plot_bgcolor="#0D1C25",
+                    font=dict(color="#F5F7FA"),
                     height=400,
-                    paper_bgcolor="#030B12",
-                    plot_bgcolor="#030B12",
                     legend=dict(font=dict(family="Inter", color="#A7BAC6", size=11))
                 )
                 st.plotly_chart(fig_gk, use_container_width=True)
