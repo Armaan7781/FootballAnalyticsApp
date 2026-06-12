@@ -161,8 +161,92 @@ st.markdown("""
             border-bottom: 2px solid rgba(0, 217, 255, 0.3);
             padding-bottom: 10px;
         }
+        
+        .subsection-header {
+            color: #00ff88;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+        }
     </style>
 """, unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════
+# STAT CATEGORIES DEFINITION
+# ═══════════════════════════════════════════════════════════════
+
+ATTACKING_STATS = {
+    'Goals': 'goals',
+    'Assists': 'assists',
+    'Total Shots': 'totalShots',
+    'Shots on Target': 'shotsOnTarget',
+    'Goals Inside Box': 'goalsFromInsideTheBox',
+    'Goals Outside Box': 'goalsFromOutsideTheBox',
+    'Big Chances Created': 'bigChancesCreated',
+    'Expected Goals': 'expectedGoals',
+    'Goal Conversion %': 'goalConversionPercentage',
+    'Headed Goals': 'headedGoals',
+    'Left Foot Goals': 'leftFootGoals',
+    'Right Foot Goals': 'rightFootGoals',
+}
+
+PASSING_STATS = {
+    'Pass Accuracy %': 'accuratePassesPercentage',
+    'Key Passes': 'keyPasses',
+    'Assists': 'assists',
+    'Big Chances Created': 'bigChancesCreated',
+    'Expected Assists': 'expectedAssists',
+    'Accurate Passes': 'accuratePasses',
+    'Total Passes': 'totalPasses',
+    'Accurate Crosses': 'accurateCrosses',
+    'Long Balls': 'accurateLongBalls',
+}
+
+DEFENCE_STATS = {
+    'Tackles': 'tackles',
+    'Tackles Won': 'tacklesWon',
+    'Interceptions': 'interceptions',
+    'Blocks': 'outfielderBlocks',
+    'Clearances': 'clearances',
+    'Aerial Duels Won': 'aerialDuelsWon',
+    'Ground Duels Won': 'groundDuelsWon',
+    'Fouls': 'fouls',
+    'Blocked Shots': 'blockedShots',
+    'Dispossessed': 'dispossessed',
+}
+
+GK_STATS = {
+    'Saves': 'saves',
+    'Clean Sheets': 'cleanSheet',
+    'Saves Parried': 'savesParried',
+    'Saves Caught': 'savesCaught',
+    'Punches': 'punches',
+    'High Claims': 'highClaims',
+    'Goals Conceded': 'goalsConceded',
+    'Penalty Saves': 'penaltySave',
+    'Errors to Goal': 'errorLeadToGoal',
+}
+
+GK_RADAR_STATS = {
+    'Saves': 'saves',
+    'Clean Sheets': 'cleanSheet',
+    'High Claims': 'highClaims',
+    'Penalty Saves': 'penaltySave',
+    'Pass %': 'accuratePassesPercentage',
+}
+
+OTHER_STATS = {
+    'Appearances': 'appearances',
+    'Matches Started': 'matchesStarted',
+    'Minutes Played': 'minutesPlayed',
+    'Touches': 'touches',
+    'Ball Recovery': 'ballRecovery',
+    'Rating': 'rating',
+    'Yellow Cards': 'yellowCards',
+    'Red Cards': 'redCards',
+    'Offsides': 'offsides',
+    'Own Goals': 'ownGoals',
+}
 
 LEAGUE_COLORS = {
     'Spain La Liga': '#FFC000',
@@ -268,237 +352,161 @@ st.markdown("""
 # ═══════════════════════════════════════════════════════════════
 # TABS
 # ═══════════════════════════════════════════════════════════════
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["⚔️ ATTACK", "🛡️ DEFENCE", "🎯 PASSING", "🥅 GOALKEEPER", "👥 PLAYER COMPARISON"])
+tab1, tab2, tab3 = st.tabs(["🏆 LEAGUE-WISE", "🏢 CLUB-WISE", "👥 PLAYER COMPARISON"])
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 1: ATTACK STATS
+# TAB 1: LEAGUE-WISE DATA
 # ═══════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown("<h2 class='section-header'>⚔️ Attacking Statistics</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='section-header'>🏆 League-Wise Statistics</h2>", unsafe_allow_html=True)
     
+    # Key Metrics
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("💥 Avg Goals", f"{filtered_df['goals'].mean():.2f}", delta=f"{filtered_df['goals'].std():.2f}")
+        st.metric("💥 Avg Goals", f"{filtered_df['goals'].mean():.2f}")
     with col2:
-        st.metric("🎯 Avg Shots", f"{filtered_df['totalShots'].mean():.2f}", delta=f"{filtered_df['shotsOnTarget'].mean():.2f}")
+        st.metric("🎯 Avg Shots", f"{filtered_df['totalShots'].mean():.2f}")
     with col3:
-        st.metric("✨ Avg Assists", f"{filtered_df['assists'].mean():.2f}", delta=f"{filtered_df['bigChancesCreated'].mean():.2f}")
+        st.metric("✨ Avg Assists", f"{filtered_df['assists'].mean():.2f}")
     with col4:
-        st.metric("📲 Pass Accuracy", f"{filtered_df['accuratePassesPercentage'].mean():.1f}%", delta=f"{filtered_df['keyPasses'].mean():.2f}")
+        st.metric("🛡️ Avg Tackles", f"{filtered_df['tackles'].mean():.2f}")
     
     st.markdown("---")
+    
+    # League Comparison Charts
     col1, col2 = st.columns(2)
     
     with col1:
-        goals_by_league = filtered_df.groupby('league_name')['goals'].agg(['mean', 'count']).reset_index()
-        goals_by_league = goals_by_league.sort_values('mean', ascending=False)
+        league_goals = filtered_df.groupby('league_name').agg({
+            'goals': 'mean',
+            'assists': 'mean',
+            'totalShots': 'mean'
+        }).reset_index().sort_values('goals', ascending=False)
         
-        fig_goals = go.Figure(data=go.Bar(
-            x=goals_by_league['league_name'],
-            y=goals_by_league['mean'],
-            marker=dict(color=goals_by_league['mean'], colorscale='Viridis', showscale=True),
-            text=goals_by_league['mean'].round(2),
-            textposition='auto',
-            hovertemplate='<b>%{x}</b><br>Avg Goals: %{y:.2f}<extra></extra>'
-        ))
-        fig_goals.update_layout(
-            title="⚽ Average Goals by League", xaxis_title="League", yaxis_title="Goals",
-            template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27"
-        )
-        st.plotly_chart(fig_goals, use_container_width=True)
-    
-    with col2:
-        shot_data = filtered_df.groupby('league_name').agg({
-            'totalShots': 'mean',
-            'shotsOnTarget': 'mean'
-        }).reset_index().sort_values('totalShots', ascending=False)
-        
-        fig_shots = go.Figure()
-        fig_shots.add_trace(go.Bar(name='Total Shots', x=shot_data['league_name'], y=shot_data['totalShots'], marker_color='#00d9ff'))
-        fig_shots.add_trace(go.Bar(name='Shots on Target', x=shot_data['league_name'], y=shot_data['shotsOnTarget'], marker_color='#ff0080'))
-        fig_shots.update_layout(
-            title="🎯 Shots Analysis by League", barmode='group', template="plotly_dark",
+        fig_attack = go.Figure()
+        fig_attack.add_trace(go.Bar(name='Goals', x=league_goals['league_name'], y=league_goals['goals'], marker_color='#00d9ff'))
+        fig_attack.add_trace(go.Bar(name='Assists', x=league_goals['league_name'], y=league_goals['assists'], marker_color='#00ff88'))
+        fig_attack.add_trace(go.Bar(name='Shots', x=league_goals['league_name'], y=league_goals['totalShots'], marker_color='#ff0080'))
+        fig_attack.update_layout(
+            title="⚔️ Attacking Stats by League", barmode='group', template="plotly_dark",
             height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27"
         )
-        st.plotly_chart(fig_shots, use_container_width=True)
+        st.plotly_chart(fig_attack, use_container_width=True)
     
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Replaced position-level touches with League-level averages
-        touches_by_league = filtered_df.groupby('league_name')['touches'].mean().reset_index().sort_values('touches', ascending=False)
-        fig_touches = go.Figure(data=go.Bar(
-            x=touches_by_league['league_name'], y=touches_by_league['touches'],
-            marker_color='#00d9ff', text=touches_by_league['touches'].round(1), textposition='auto'
-        ))
-        fig_touches.update_layout(title="👆 Average Touches by League", template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-        st.plotly_chart(fig_touches, use_container_width=True)
-        
     with col2:
-        # Replaced position-level goals inside/outside box with League-level averages
-        box_data = filtered_df.groupby('league_name').agg({
-            'goalsFromInsideTheBox': 'mean',
-            'goalsFromOutsideTheBox': 'mean'
-        }).reset_index()
-        fig_box = go.Figure(data=[
-            go.Bar(name='Inside Box', x=box_data['league_name'], y=box_data['goalsFromInsideTheBox'], marker_color='#00d9ff'),
-            go.Bar(name='Outside Box', x=box_data['league_name'], y=box_data['goalsFromOutsideTheBox'], marker_color='#ff0080'),
-        ])
-        fig_box.update_layout(title="📍 Goals Location Analysis by League", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-        st.plotly_chart(fig_box, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("<h3 class='section-header'>🏆 Top 10 Scorers</h3>", unsafe_allow_html=True)
-    top_scorers = filtered_df.nlargest(10, 'goals')[['player', 'team', 'league_name', 'goals', 'assists', 'totalShots', 'shotsOnTarget']]
-    top_scorers.columns = ['Player', 'Team', 'League', 'Goals', 'Assists', 'Shots', 'On Target']
-    st.dataframe(top_scorers, use_container_width=True, hide_index=True)
-
-# ═══════════════════════════════════════════════════════════════
-# TAB 2: DEFENCE STATS
-# ═══════════════════════════════════════════════════════════════
-with tab2:
-    st.markdown("<h2 class='section-header'>🛡️ Defensive Statistics</h2>", unsafe_allow_html=True)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("🤝 Avg Tackles", f"{filtered_df['tackles'].mean():.2f}")
-    with col2: st.metric("👁️ Avg Interceptions", f"{filtered_df['interceptions'].mean():.2f}")
-    with col3: st.metric("🟩 Avg Blocks", f"{filtered_df['outfielderBlocks'].mean():.2f}")
-    with col4: st.metric("🧹 Avg Clearances", f"{filtered_df['clearances'].mean():.2f}")
-    
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        defence_by_league = filtered_df.groupby('league_name').agg({
+        league_defence = filtered_df.groupby('league_name').agg({
             'tackles': 'mean',
             'interceptions': 'mean',
             'outfielderBlocks': 'mean'
         }).reset_index()
         
         fig_defence = go.Figure()
-        fig_defence.add_trace(go.Bar(name='Tackles', x=defence_by_league['league_name'], y=defence_by_league['tackles'], marker_color='#00d9ff'))
-        fig_defence.add_trace(go.Bar(name='Interceptions', x=defence_by_league['league_name'], y=defence_by_league['interceptions'], marker_color='#ff0080'))
-        fig_defence.add_trace(go.Bar(name='Blocks', x=defence_by_league['league_name'], y=defence_by_league['outfielderBlocks'], marker_color='#00ff88'))
-        fig_defence.update_layout(title="🛡️ Defensive Actions by League", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
+        fig_defence.add_trace(go.Bar(name='Tackles', x=league_defence['league_name'], y=league_defence['tackles'], marker_color='#00d9ff'))
+        fig_defence.add_trace(go.Bar(name='Interceptions', x=league_defence['league_name'], y=league_defence['interceptions'], marker_color='#ff0080'))
+        fig_defence.add_trace(go.Bar(name='Blocks', x=league_defence['league_name'], y=league_defence['outfielderBlocks'], marker_color='#00ff88'))
+        fig_defence.update_layout(
+            title="🛡️ Defensive Stats by League", barmode='group', template="plotly_dark",
+            height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27"
+        )
         st.plotly_chart(fig_defence, use_container_width=True)
     
-    with col2:
-        duels_by_league = filtered_df.groupby('league_name').agg({
-            'aerialDuelsWon': 'mean',
-            'groundDuelsWon': 'mean'
-        }).reset_index()
-        
-        fig_duels = go.Figure()
-        fig_duels.add_trace(go.Bar(name='Aerial Duels Won', x=duels_by_league['league_name'], y=duels_by_league['aerialDuelsWon'], marker_color='#00d9ff'))
-        fig_duels.add_trace(go.Bar(name='Ground Duels Won', x=duels_by_league['league_name'], y=duels_by_league['groundDuelsWon'], marker_color='#ff0080'))
-        fig_duels.update_layout(title="⚔️ Duels Won by League", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-        st.plotly_chart(fig_duels, use_container_width=True)
-    
     st.markdown("---")
-    st.markdown("<h3 class='section-header'>🏆 Top 10 Defenders (by Tackles)</h3>", unsafe_allow_html=True)
-    top_defenders = filtered_df.nlargest(10, 'tackles')[['player', 'team', 'league_name', 'tackles', 'interceptions', 'outfielderBlocks', 'clearances']]
-    top_defenders.columns = ['Player', 'Team', 'League', 'Tackles', 'Interceptions', 'Blocks', 'Clearances']
-    st.dataframe(top_defenders, use_container_width=True, hide_index=True)
+    
+    # League Summary Table
+    st.markdown("<h3 class='subsection-header'>📊 League Summary Statistics</h3>", unsafe_allow_html=True)
+    league_summary = filtered_df.groupby('league_name').agg({
+        'player': 'count',
+        'goals': 'mean',
+        'assists': 'mean',
+        'tackles': 'mean',
+        'accuratePassesPercentage': 'mean',
+        'totalShots': 'mean',
+    }).reset_index().sort_values('goals', ascending=False)
+    
+    league_summary.columns = ['League', 'Players', 'Avg Goals', 'Avg Assists', 'Avg Tackles', 'Pass %', 'Avg Shots']
+    league_summary['Avg Goals'] = league_summary['Avg Goals'].round(2)
+    league_summary['Avg Assists'] = league_summary['Avg Assists'].round(2)
+    league_summary['Avg Tackles'] = league_summary['Avg Tackles'].round(2)
+    league_summary['Pass %'] = league_summary['Pass %'].round(1)
+    league_summary['Avg Shots'] = league_summary['Avg Shots'].round(2)
+    
+    st.dataframe(league_summary, use_container_width=True, hide_index=True)
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 3: PASSING STATS
+# TAB 2: CLUB-WISE DATA
+# ═══════════════════════════════════════════════════════════════
+with tab2:
+    st.markdown("<h2 class='section-header'>🏢 Club-Wise Statistics</h2>", unsafe_allow_html=True)
+    
+    # Team Selection
+    selected_team_filter = st.selectbox(
+        "Select a team to view details:",
+        options=["All Teams"] + sorted(filtered_df['team'].unique().tolist()),
+        key="club_filter"
+    )
+    
+    if selected_team_filter == "All Teams":
+        club_data = filtered_df
+    else:
+        club_data = filtered_df[filtered_df['team'] == selected_team_filter]
+    
+    # Key Metrics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("💥 Avg Goals", f"{club_data['goals'].mean():.2f}")
+    with col2:
+        st.metric("🎯 Avg Shots", f"{club_data['totalShots'].mean():.2f}")
+    with col3:
+        st.metric("✨ Avg Assists", f"{club_data['assists'].mean():.2f}")
+    with col4:
+        st.metric("🛡️ Avg Tackles", f"{club_data['tackles'].mean():.2f}")
+    
+    st.markdown("---")
+    
+    # Club Summary Table
+    st.markdown("<h3 class='subsection-header'>📊 Club Summary Statistics</h3>", unsafe_allow_html=True)
+    
+    if selected_team_filter == "All Teams":
+        club_summary = filtered_df.groupby('team').agg({
+            'league_name': 'first',
+            'player': 'count',
+            'goals': 'mean',
+            'assists': 'mean',
+            'tackles': 'mean',
+            'accuratePassesPercentage': 'mean',
+            'totalShots': 'mean',
+            'interceptions': 'mean'
+        }).reset_index().sort_values('goals', ascending=False)
+        
+        club_summary.columns = ['Team', 'League', 'Players', 'Avg Goals', 'Avg Assists', 'Avg Tackles', 'Pass %', 'Avg Shots', 'Avg Interceptions']
+        club_summary['Avg Goals'] = club_summary['Avg Goals'].round(2)
+        club_summary['Avg Assists'] = club_summary['Avg Assists'].round(2)
+        club_summary['Avg Tackles'] = club_summary['Avg Tackles'].round(2)
+        club_summary['Pass %'] = club_summary['Pass %'].round(1)
+        club_summary['Avg Shots'] = club_summary['Avg Shots'].round(2)
+        club_summary['Avg Interceptions'] = club_summary['Avg Interceptions'].round(2)
+        
+        st.dataframe(club_summary, use_container_width=True, hide_index=True)
+    else:
+        # Top Players in Selected Team
+        team_players = club_data.nlargest(10, 'goals')[['player', 'goals', 'assists', 'totalShots', 'tackles', 'accuratePassesPercentage', 'minutesPlayed']]
+        team_players.columns = ['Player', 'Goals', 'Assists', 'Shots', 'Tackles', 'Pass %', 'Minutes']
+        team_players['Pass %'] = team_players['Pass %'].round(1)
+        
+        st.markdown(f"<h3 class='subsection-header'>👥 Top Players - {selected_team_filter}</h3>", unsafe_allow_html=True)
+        st.dataframe(team_players, use_container_width=True, hide_index=True)
+
+# ═══════════════════════════════════════════════════════════════
+# TAB 3: PLAYER COMPARISON
 # ═══════════════════════════════════════════════════════════════
 with tab3:
-    st.markdown("<h2 class='section-header'>🎯 Passing Statistics</h2>", unsafe_allow_html=True)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("📲 Pass Accuracy %", f"{filtered_df['accuratePassesPercentage'].mean():.1f}%")
-    with col2: st.metric("⚡ Avg Key Passes", f"{filtered_df['keyPasses'].mean():.2f}")
-    with col3: st.metric("🎁 Avg Assists", f"{filtered_df['assists'].mean():.2f}")
-    with col4: st.metric("✨ Big Chances Created", f"{filtered_df['bigChancesCreated'].mean():.2f}")
-    
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        pass_by_league = filtered_df.groupby('league_name')['accuratePassesPercentage'].mean().reset_index().sort_values('accuratePassesPercentage', ascending=False)
-        fig_pass = go.Figure(data=go.Bar(
-            x=pass_by_league['league_name'], y=pass_by_league['accuratePassesPercentage'],
-            marker=dict(color=pass_by_league['accuratePassesPercentage'], colorscale='Plasma', showscale=True),
-            text=pass_by_league['accuratePassesPercentage'].round(1), textposition='auto'
-        ))
-        fig_pass.update_layout(title="📲 Pass Accuracy % by League", template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-        st.plotly_chart(fig_pass, use_container_width=True)
-    
-    with col2:
-        assists_data = filtered_df.groupby('league_name').agg({
-            'assists': 'mean',
-            'bigChancesCreated': 'mean',
-            'keyPasses': 'mean'
-        }).reset_index()
-        
-        fig_assists = go.Figure()
-        fig_assists.add_trace(go.Bar(name='Assists', x=assists_data['league_name'], y=assists_data['assists'], marker_color='#00d9ff'))
-        fig_assists.add_trace(go.Bar(name='Big Chances', x=assists_data['league_name'], y=assists_data['bigChancesCreated'], marker_color='#ff0080'))
-        fig_assists.add_trace(go.Bar(name='Key Passes', x=assists_data['league_name'], y=assists_data['keyPasses'], marker_color='#00ff88'))
-        fig_assists.update_layout(title="🎁 Creativity Stats by League", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-        st.plotly_chart(fig_assists, use_container_width=True)
-        
-    st.markdown("---")
-    st.markdown("<h3 class='section-header'>🏆 Top 10 Playmakers</h3>", unsafe_allow_html=True)
-    top_creators = filtered_df.nlargest(10, 'assists')[['player', 'team', 'league_name', 'assists', 'keyPasses', 'bigChancesCreated', 'accuratePassesPercentage']]
-    top_creators.columns = ['Player', 'Team', 'League', 'Assists', 'Key Passes', 'Big Chances', 'Pass %']
-    st.dataframe(top_creators, use_container_width=True, hide_index=True)
-
-# ═══════════════════════════════════════════════════════════════
-# TAB 4: GOALKEEPER STATS
-# ═══════════════════════════════════════════════════════════════
-with tab4:
-    st.markdown("<h2 class='section-header'>🥅 Goalkeeper Statistics</h2>", unsafe_allow_html=True)
-    
-    # Auto-identifies goalkeepers by isolating records where made saves > 0
-    gk_data = filtered_df[filtered_df['saves'] > 0]
-    
-    if len(gk_data) > 0:
-        col1, col2, col3, col4 = st.columns(4)
-        with col1: st.metric("🙌 Avg Saves", f"{gk_data['saves'].mean():.2f}")
-        with col2: st.metric("🟩 Avg Clean Sheets", f"{gk_data['cleanSheet'].mean():.2f}")
-        with col3: st.metric("✋ Avg Parry Saves", f"{gk_data['savesParried'].mean():.2f}")
-        with col4: st.metric("⚠️ Errors to Goal", f"{gk_data['errorLeadToGoal'].mean():.2f}")
-        
-        st.markdown("---")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            saves_by_league = gk_data.groupby('league_name').agg({'saves': 'mean', 'cleanSheet': 'mean'}).reset_index()
-            fig_saves = go.Figure()
-            fig_saves.add_trace(go.Bar(name='Saves', x=saves_by_league['league_name'], y=saves_by_league['saves'], marker_color='#00d9ff'))
-            fig_saves.add_trace(go.Bar(name='Clean Sheets', x=saves_by_league['league_name'], y=saves_by_league['cleanSheet'], marker_color='#00ff88'))
-            fig_saves.update_layout(title="🙌 GK Performance by League", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-            st.plotly_chart(fig_saves, use_container_width=True)
-        
-        with col2:
-            gk_dist = gk_data.groupby('league_name').agg({'saves': 'mean', 'savesParried': 'mean', 'highClaims': 'mean'}).reset_index()
-            fig_dist = go.Figure()
-            fig_dist.add_trace(go.Bar(name='Saves', x=gk_dist['league_name'], y=gk_dist['saves'], marker_color='#00d9ff'))
-            fig_dist.add_trace(go.Bar(name='Parried', x=gk_dist['league_name'], y=gk_dist['savesParried'], marker_color='#ff0080'))
-            fig_dist.add_trace(go.Bar(name='High Claims', x=gk_dist['league_name'], y=gk_dist['highClaims'], marker_color='#00ff88'))
-            fig_dist.update_layout(title="🥊 GK Shot-Stopping Distribution", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-            st.plotly_chart(fig_dist, use_container_width=True)
-        
-        st.markdown("---")
-        st.markdown("<h3 class='section-header'>🏆 Top 10 Goalkeepers</h3>", unsafe_allow_html=True)
-        top_gk = gk_data.nlargest(10, 'saves')[['player', 'team', 'league_name', 'saves', 'cleanSheet', 'savesParried', 'errorLeadToGoal']]
-        top_gk.columns = ['Player', 'Team', 'League', 'Saves', 'Clean Sheets', 'Parried', 'Errors']
-        st.dataframe(top_gk, use_container_width=True, hide_index=True)
-    else:
-        st.warning("⚠️ No goalkeeper statistics extracted matching current league selections.")
-
-# ═══════════════════════════════════════════════════════════════
-# TAB 5: PLAYER COMPARISON
-# ═══════════════════════════════════════════════════════════════
-with tab5:
     st.markdown("<h2 class='section-header'>👥 Player Comparison</h2>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
-    with col1: player1 = st.selectbox("Select Player 1:", options=[None] + filtered_players, key="p1")
-    with col2: player2 = st.selectbox("Select Player 2:", options=[None] + filtered_players, key="p2")
+    with col1:
+        player1 = st.selectbox("Select Player 1:", options=[None] + filtered_players, key="p1")
+    with col2:
+        player2 = st.selectbox("Select Player 2:", options=[None] + filtered_players, key="p2")
     
     st.markdown("---")
     
@@ -506,17 +514,13 @@ with tab5:
         p1_data = filtered_df[filtered_df['player'] == player1].iloc[0]
         p2_data = filtered_df[filtered_df['player'] == player2].iloc[0]
         
+        # Player Header Cards
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"""
                 <div class='player-card'>
                     <div class='player-name'>{player1}</div>
-                    <div class='player-meta'>{p1_data['team']} | {p1_data['league_name']}</div>
-                    <div style='margin-top: 15px;'>
-                        <div class='stat-card'><div class='stat-value'>{int(p1_data['goals'])}</div><div class='stat-label'>GOALS</div></div>
-                        <div class='stat-card'><div class='stat-value'>{int(p1_data['assists'])}</div><div class='stat-label'>ASSISTS</div></div>
-                        <div class='stat-card'><div class='stat-value'>{int(p1_data['tackles'])}</div><div class='stat-label'>TACKLES</div></div>
-                    </div>
+                    <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.95em;'>{p1_data['team']} | {p1_data['league_name']}</div>
                 </div>
             """, unsafe_allow_html=True)
         
@@ -524,57 +528,162 @@ with tab5:
             st.markdown(f"""
                 <div class='player-card'>
                     <div class='player-name'>{player2}</div>
-                    <div class='player-meta'>{p2_data['team']} | {p2_data['league_name']}</div>
-                    <div style='margin-top: 15px;'>
-                        <div class='stat-card'><div class='stat-value'>{int(p2_data['goals'])}</div><div class='stat-label'>GOALS</div></div>
-                        <div class='stat-card'><div class='stat-value'>{int(p2_data['assists'])}</div><div class='stat-label'>ASSISTS</div></div>
-                        <div class='stat-card'><div class='stat-value'>{int(p2_data['tackles'])}</div><div class='stat-label'>TACKLES</div></div>
-                    </div>
+                    <div style='color: rgba(255, 255, 255, 0.7); font-size: 0.95em;'>{p2_data['team']} | {p2_data['league_name']}</div>
                 </div>
             """, unsafe_allow_html=True)
         
         st.markdown("---")
-        col1, col2 = st.columns(2)
         
-        with col1:
-            comparison_stats = {
-                'Goals': [int(p1_data['goals']), int(p2_data['goals'])],
-                'Assists': [int(p1_data['assists']), int(p2_data['assists'])],
-                'Shots': [int(p1_data['totalShots']), int(p2_data['totalShots'])],
-                'Tackles': [int(p1_data['tackles']), int(p2_data['tackles'])],
-                'Interceptions': [int(p1_data['interceptions']), int(p2_data['interceptions'])],
-            }
-            fig_compare = go.Figure()
-            fig_compare.add_trace(go.Bar(name=player1, x=list(comparison_stats.keys()), y=[v[0] for v in comparison_stats.values()], marker_color='#00d9ff'))
-            fig_compare.add_trace(go.Bar(name=player2, x=list(comparison_stats.keys()), y=[v[1] for v in comparison_stats.values()], marker_color='#ff0080'))
-            fig_compare.update_layout(title="📊 Key Stats Comparison", barmode='group', template="plotly_dark", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-            st.plotly_chart(fig_compare, use_container_width=True)
+        # ═══════════════════════════════════════════════════════════════
+        # ATTACKING STATS TABLE
+        # ═══════════════════════════════════════════════════════════════
+        st.markdown("<h3 class='subsection-header'>⚔️ Attacking Statistics</h3>", unsafe_allow_html=True)
         
-        with col2:
-            categories = ['Goals', 'Assists', 'Shots', 'Tackles', 'Pass %']
-            p1_values = [int(p1_data['goals']), int(p1_data['assists']), int(p1_data['totalShots']), int(p1_data['tackles']), p1_data['accuratePassesPercentage']]
-            p2_values = [int(p2_data['goals']), int(p2_data['assists']), int(p2_data['totalShots']), int(p2_data['tackles']), p2_data['accuratePassesPercentage']]
-            
-            max_vals = [max(p1_values[i], p2_values[i], 1) for i in range(len(categories))]
-            p1_norm = [p1_values[i]/max_vals[i]*100 for i in range(len(categories))]
-            p2_norm = [p2_values[i]/max_vals[i]*100 for i in range(len(categories))]
-            
-            fig_radar = go.Figure()
-            fig_radar.add_trace(go.Scatterpolar(r=p1_norm, theta=categories, fill='toself', name=player1, line_color='#00d9ff'))
-            fig_radar.add_trace(go.Scatterpolar(r=p2_norm, theta=categories, fill='toself', name=player2, line_color='#ff0080'))
-            fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), template="plotly_dark", title="🎯 Player Profile Radar", height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27")
-            st.plotly_chart(fig_radar, use_container_width=True)
+        attacking_data = {metric: [
+            int(p1_data[col]) if col in p1_data.index and isinstance(p1_data[col], (int, float)) else 0,
+            int(p2_data[col]) if col in p2_data.index and isinstance(p2_data[col], (int, float)) else 0
+        ] for metric, col in ATTACKING_STATS.items()}
+        
+        attacking_df = pd.DataFrame(attacking_data, index=[player1, player2]).T
+        attacking_df.columns = ['Player 1', 'Player 2']
+        st.dataframe(attacking_df, use_container_width=True)
         
         st.markdown("---")
-        st.markdown("<h3 class='section-header'>📋 Detailed Metrics</h3>", unsafe_allow_html=True)
-        detailed_comparison = pd.DataFrame({
-            'Metric': ['Goals', 'Assists', 'Shots', 'Shots on Target', 'Pass Accuracy %', 'Tackles', 'Interceptions', 'Blocks', 'Appearances', 'Minutes', 'Big Chances Created', 'Key Passes', 'Yellow Cards', 'Red Cards'],
-            player1: [int(p1_data['goals']), int(p1_data['assists']), int(p1_data['totalShots']), int(p1_data['shotsOnTarget']), round(p1_data['accuratePassesPercentage'], 2), int(p1_data['tackles']), int(p1_data['interceptions']), int(p1_data['outfielderBlocks']), int(p1_data['appearances']), int(p1_data['minutesPlayed']), int(p1_data['bigChancesCreated']), int(p1_data['keyPasses']), int(p1_data['yellowCards']), int(p1_data['redCards'])],
-            player2: [int(p2_data['goals']), int(p2_data['assists']), int(p2_data['totalShots']), int(p2_data['shotsOnTarget']), round(p2_data['accuratePassesPercentage'], 2), int(p2_data['tackles']), int(p2_data['interceptions']), int(p2_data['outfielderBlocks']), int(p2_data['appearances']), int(p2_data['minutesPlayed']), int(p2_data['bigChancesCreated']), int(p2_data['keyPasses']), int(p2_data['yellowCards']), int(p2_data['redCards'])],
-        })
-        st.dataframe(detailed_comparison, use_container_width=True, hide_index=True)
+        
+        # ═══════════════════════════════════════════════════════════════
+        # PASSING STATS WITH RADAR CHART
+        # ═══════════════════════════════════════════════════════════════
+        st.markdown("<h3 class='subsection-header'>🎯 Passing Metrics</h3>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            passing_data = {metric: [
+                float(p1_data[col]) if col in p1_data.index else 0,
+                float(p2_data[col]) if col in p2_data.index else 0
+            ] for metric, col in PASSING_STATS.items()}
+            
+            passing_df = pd.DataFrame(passing_data, index=[player1, player2]).T
+            passing_df.columns = ['Player 1', 'Player 2']
+            passing_df = passing_df.round(2)
+            st.dataframe(passing_df, use_container_width=True)
+        
+        with col2:
+            # Radar chart for passing
+            radar_categories = ['Pass %', 'Key Passes', 'Assists', 'Big Chances', 'Expected Assists']
+            p1_radar_vals = [
+                p1_data['accuratePassesPercentage'],
+                min(p1_data['keyPasses'], 100),
+                min(p1_data['assists'] * 10, 100),
+                min(p1_data['bigChancesCreated'] * 10, 100),
+                min(p1_data['expectedAssists'] * 10, 100)
+            ]
+            p2_radar_vals = [
+                p2_data['accuratePassesPercentage'],
+                min(p2_data['keyPasses'], 100),
+                min(p2_data['assists'] * 10, 100),
+                min(p2_data['bigChancesCreated'] * 10, 100),
+                min(p2_data['expectedAssists'] * 10, 100)
+            ]
+            
+            fig_radar_pass = go.Figure()
+            fig_radar_pass.add_trace(go.Scatterpolar(
+                r=p1_radar_vals, theta=radar_categories, fill='toself', 
+                name=player1, line_color='#00d9ff', fillcolor='rgba(0, 217, 255, 0.3)'
+            ))
+            fig_radar_pass.add_trace(go.Scatterpolar(
+                r=p2_radar_vals, theta=radar_categories, fill='toself',
+                name=player2, line_color='#ff0080', fillcolor='rgba(255, 0, 128, 0.3)'
+            ))
+            fig_radar_pass.update_layout(
+                polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
+                template="plotly_dark", title="📊 Passing Profile",
+                height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27"
+            )
+            st.plotly_chart(fig_radar_pass, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # ═══════════════════════════════════════════════════════════════
+        # DEFENCE STATS TABLE
+        # ═══════════════════════════════════════════════════════════════
+        st.markdown("<h3 class='subsection-header'>🛡️ Defensive Statistics</h3>", unsafe_allow_html=True)
+        
+        defence_data = {metric: [
+            int(p1_data[col]) if col in p1_data.index and isinstance(p1_data[col], (int, float)) else 0,
+            int(p2_data[col]) if col in p2_data.index and isinstance(p2_data[col], (int, float)) else 0
+        ] for metric, col in DEFENCE_STATS.items()}
+        
+        defence_df = pd.DataFrame(defence_data, index=[player1, player2]).T
+        defence_df.columns = ['Player 1', 'Player 2']
+        st.dataframe(defence_df, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # ═══════════════════════════════════════════════════════════════
+        # GOALKEEPER STATS (if applicable)
+        # ═══════════════════════════════════════════════════════════════
+        if p1_data['saves'] > 0 or p2_data['saves'] > 0:
+            st.markdown("<h3 class='subsection-header'>🥅 Goalkeeper Statistics</h3>", unsafe_allow_html=True)
+            
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                gk_data = {metric: [
+                    int(p1_data[col]) if col in p1_data.index and isinstance(p1_data[col], (int, float)) else 0,
+                    int(p2_data[col]) if col in p2_data.index and isinstance(p2_data[col], (int, float)) else 0
+                ] for metric, col in GK_STATS.items()}
+                
+                gk_df = pd.DataFrame(gk_data, index=[player1, player2]).T
+                gk_df.columns = ['Player 1', 'Player 2']
+                st.dataframe(gk_df, use_container_width=True)
+            
+            with col2:
+                # Radar chart for GK
+                gk_radar_cats = list(GK_RADAR_STATS.keys())
+                p1_gk_radar = [
+                    min(p1_data[GK_RADAR_STATS[cat]], 100) if GK_RADAR_STATS[cat] in p1_data.index else 0
+                    for cat in gk_radar_cats
+                ]
+                p2_gk_radar = [
+                    min(p2_data[GK_RADAR_STATS[cat]], 100) if GK_RADAR_STATS[cat] in p2_data.index else 0
+                    for cat in gk_radar_cats
+                ]
+                
+                fig_radar_gk = go.Figure()
+                fig_radar_gk.add_trace(go.Scatterpolar(
+                    r=p1_gk_radar, theta=gk_radar_cats, fill='toself',
+                    name=player1, line_color='#00d9ff', fillcolor='rgba(0, 217, 255, 0.3)'
+                ))
+                fig_radar_gk.add_trace(go.Scatterpolar(
+                    r=p2_gk_radar, theta=gk_radar_cats, fill='toself',
+                    name=player2, line_color='#ff0080', fillcolor='rgba(255, 0, 128, 0.3)'
+                ))
+                fig_radar_gk.update_layout(
+                    polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
+                    template="plotly_dark", title="🥊 GK Profile",
+                    height=400, paper_bgcolor="#0a0e27", plot_bgcolor="#0a0e27"
+                )
+                st.plotly_chart(fig_radar_gk, use_container_width=True)
+            
+            st.markdown("---")
+        
+        # ═══════════════════════════════════════════════════════════════
+        # OTHER STATISTICS TABLE
+        # ═══════════════════════════════════════════════════════════════
+        st.markdown("<h3 class='subsection-header'>📋 Other Statistics</h3>", unsafe_allow_html=True)
+        
+        other_data = {metric: [
+            int(p1_data[col]) if col in p1_data.index and isinstance(p1_data[col], (int, float)) else 0,
+            int(p2_data[col]) if col in p2_data.index and isinstance(p2_data[col], (int, float)) else 0
+        ] for metric, col in OTHER_STATS.items()}
+        
+        other_df = pd.DataFrame(other_data, index=[player1, player2]).T
+        other_df.columns = ['Player 1', 'Player 2']
+        st.dataframe(other_df, use_container_width=True)
+        
     else:
-        st.info("👥 Select two players to view detailed comparison options.")
+        st.info("👥 Select two players to view detailed comparison.")
 
 # ═══════════════════════════════════════════════════════════════
 # FOOTER
