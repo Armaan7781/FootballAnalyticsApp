@@ -43,9 +43,7 @@ st.markdown("""
             --text-muted: #6C8594;
         }
 
-        /* -----------------------------------------------------------------
-           CORE LAYOUT OVERRIDES (KILLING ALL WHITE BACKGROUNDS)
-           ----------------------------------------------------------------- */
+        /* CORE LAYOUT OVERRIDES (KILLING ALL WHITE BACKGROUNDS) */
         html, body {
             background-color: var(--bg-primary) !important;
             color: var(--text-primary) !important;
@@ -235,43 +233,110 @@ def hex_to_rgba(hex_color, opacity):
     return f'rgba({r}, {g}, {b}, {o})'
 
 # ═══════════════════════════════════════════════════════════════
-# CREATE HORIZONTAL BAR CHART (TACTICAL STYLING)
+# SCOUTING RADAR STYLER (SOFASCORE STYLE SPECIFICATION)
 # ═══════════════════════════════════════════════════════════════
-def create_horizontal_bar_chart(data_dict, title, colors_list=None):
-    """Create horizontal bar chart with tactical styling using custom colors only."""
-    if colors_list is None:
-        colors_list = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
+def apply_sofascore_radar_layout(fig, title):
+    """Applies a strict SofaScore tactical design template to a multi-player radar chart."""
+    fig.update_layout(
+        polar=dict(
+            bgcolor="#041018",
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100],
+                gridcolor="rgba(20, 93, 109, 0.2)",
+                linecolor="rgba(20, 93, 109, 0.2)",
+                tickfont=dict(color="#6C8594", family="JetBrains Mono", size=9)
+            ),
+            angularaxis=dict(
+                gridcolor="rgba(20, 93, 109, 0.2)",
+                linecolor="rgba(20, 93, 109, 0.2)",
+                tickfont=dict(family="Bebas Neue", size=14, color="#F5F7FA")
+            )
+        ),
+        paper_bgcolor="#0D1C25",
+        plot_bgcolor="#0D1C25",
+        font=dict(color="#F5F7FA"),
+        title=dict(text=title, font=dict(family="Bebas Neue", size=20, color="#F5F7FA")),
+        height=500,
+        legend=dict(
+            orientation="v",
+            yanchor="middle",
+            y=0.5,
+            xanchor="left",
+            x=1.05,
+            font=dict(family="Inter", size=11, color="#A7BAC6")
+        ),
+        margin=dict(l=50, r=150, t=60, b=50)
+    )
+    return fig
+
+# Shared palettes/utilities
+radar_palette = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
+
+
+def create_horizontal_bar_chart(values_dict, title, colors):
+    """Simple horizontal bar chart helper for club views."""
+    labels = list(values_dict.keys())
+    vals = list(values_dict.values())
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=vals,
+        y=labels,
+        orientation='h',
+        marker=dict(color=colors[0] if colors else '#00B8C9'),
+        text=[f"{v:.1f}" if isinstance(v, float) else f"{v}" for v in vals],
+        textposition='auto'
+    ))
+    fig.update_layout(
+        title=dict(text=title, font=dict(family="Bebas Neue", size=16, color="#F5F7FA")),
+        paper_bgcolor="#0D1C25",
+        plot_bgcolor="#0D1C25",
+        font=dict(color="#F5F7FA"),
+        height=360,
+        margin=dict(l=140, r=20, t=50, b=40)
+    )
+    return fig
+
+# ═══════════════════════════════════════════════════════════════
+# RANKING GRADIENT BAR CHART BUILDER
+# ═══════════════════════════════════════════════════════════════
+def create_ranked_scouting_bar(df_subset, value_col, label_col, title, inverse_rank=False):
+    """Creates a custom horizontal bar chart matching the 5-step gradient palette constraint."""
+    gradient_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
     
-    metrics = list(data_dict.keys())
-    values = list(data_dict.values())
+    sorted_df = df_subset.sort_values(by=value_col, ascending=inverse_rank).head(5)
     
-    bar_colors = [colors_list[i % len(colors_list)] for i in range(len(metrics))]
+    metrics = sorted_df[label_col].tolist()
+    values = sorted_df[value_col].tolist()
+    
+    # Reverse loops for proper horizontal stack drawing hierarchy
+    metrics_rev = list(reversed(metrics))
+    values_rev = list(reversed(values))
+    
+    # If reversed, #1 is at the bottom of arrays, meaning it gets gradient index 0
+    bar_colors = [gradient_palette[4 - i] for i in range(len(metrics_rev))]
     
     fig = go.Figure(data=[
         go.Bar(
-            y=metrics,
-            x=values,
+            y=metrics_rev,
+            x=values_rev,
             orientation='h',
             marker=dict(color=bar_colors, line=dict(width=0)),
-            text=[f'{v:.1f}' for v in values],
+            text=[f'{v:.1f}' if isinstance(v, float) else f'{v}' for v in values_rev],
             textposition='auto',
             textfont=dict(family="JetBrains Mono", color="#030B12", weight="bold"),
-            hovertemplate='<b style="font-family: Bebas Neue; font-size: 16px; color:#F5F7FA;">%{y}</b><br><span style="font-family: JetBrains Mono; color:#F5F7FA;">%{x:.2f}</span><extra></extra>'
+            hovertemplate='<b style="font-family: Bebas Neue; color:#F5F7FA;">%{y}</b><br><span style="font-family: JetBrains Mono; color:#F5F7FA;">%{x:.2f}</span><extra></extra>'
         )
     ])
     
     fig.update_layout(
-        title=dict(text=title, font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
+        title=dict(text=title, font=dict(family="Bebas Neue", size=18, color="#F5F7FA")),
         xaxis=dict(
-            title=dict(
-                text="VOLUME", 
-                font=dict(family="JetBrains Mono", size=10, color="#A7BAC6")
-            ),
-            tickfont=dict(family="JetBrains Mono", color="#6C8594", size=10),
+            title=dict(text="OUTPUT TIER", font=dict(family="JetBrains Mono", size=9, color="#6C8594")),
+            tickfont=dict(family="JetBrains Mono", color="#6C8594", size=9),
             gridcolor="#145D6D",
             gridwidth=0.5,
-            zerolinecolor="#37E6F7",
-            zerolinewidth=1
+            zeroline=False
         ),
         yaxis=dict(
             tickfont=dict(family="Inter", color="#F5F7FA", size=11, weight="bold")
@@ -279,19 +344,42 @@ def create_horizontal_bar_chart(data_dict, title, colors_list=None):
         paper_bgcolor="#0D1C25",
         plot_bgcolor="#0D1C25",
         font=dict(color="#F5F7FA"),
-        height=400,
+        height=320,
         showlegend=False,
-        margin=dict(l=200, r=20, t=50, b=40)
+        margin=dict(l=140, r=20, t=50, b=40)
     )
-    
     return fig
 
 df = load_data()
 
+# Safety: ensure horizontal bar helper exists in globals (guard against import/definition issues)
+if 'create_horizontal_bar_chart' not in globals():
+    def create_horizontal_bar_chart(values_dict, title, colors):
+        labels = list(values_dict.keys())
+        vals = list(values_dict.values())
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=vals,
+            y=labels,
+            orientation='h',
+            marker=dict(color=colors[0] if colors else '#00B8C9'),
+            text=[f"{v:.1f}" if isinstance(v, float) else f"{v}" for v in vals],
+            textposition='auto'
+        ))
+        fig.update_layout(
+            title=dict(text=title, font=dict(family="Bebas Neue", size=16, color="#F5F7FA")),
+            paper_bgcolor="#0D1C25",
+            plot_bgcolor="#0D1C25",
+            font=dict(color="#F5F7FA"),
+            height=360,
+            margin=dict(l=140, r=20, t=50, b=40)
+        )
+        return fig
+
 if df is None:
     st.stop()
 
-# Get unique values
+# Cache global unique structures
 all_players = sorted(df['player'].unique().tolist())
 all_teams = sorted(df['team'].unique().tolist())
 all_leagues = sorted(df['league_name'].unique().tolist())
@@ -373,304 +461,130 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
-# TABS
+# MAIN HUB NAVIGATION STRUCTURE
 # ═══════════════════════════════════════════════════════════════
-tab1, tab2, tab3 = st.tabs(["MACRO LEAGUE ANALYSIS", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
+tab1, tab2, tab3 = st.tabs(["PLAYER-CENTRIC SCOUTING", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 1: LEAGUE-WISE DATA
+# TAB 1: PLAYER-CENTRIC SCOUTING DASHBOARD (REBUILT LAYER)
 # ═══════════════════════════════════════════════════════════════
 with tab1:
     
-    league_stats = filtered_df.groupby('league_name').agg({
-        'goals': 'sum',
-        'expectedGoals': 'sum',
-        'bigChancesCreated': 'sum',
-        'bigChancesMissed': 'sum',
-        'tackles': 'sum',
-        'saves': 'sum',
-        'cleanSheet': 'sum'
-    }).reset_index()
-    
-    st.markdown("<div class='tactical-header'>MACRO LEAGUE AGGREGATES</div>", unsafe_allow_html=True)
-    
-    col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-    with col1: st.metric("GOALS REGISTERED", f"{league_stats['goals'].sum():.0f}")
-    with col2: st.metric("CUMULATIVE xG", f"{league_stats['expectedGoals'].sum():.1f}")
-    with col3: st.metric("BCC (CREATED)", f"{league_stats['bigChancesCreated'].sum():.0f}")
-    with col4: st.metric("BCM (MISSED)", f"{league_stats['bigChancesMissed'].sum():.0f}")
-    with col5: st.metric("TACKLES WON", f"{league_stats['tackles'].sum():.0f}")
-    with col6: st.metric("SAVES MADE", f"{league_stats['saves'].sum():.0f}")
-    with col7: st.metric("CLEAN SHEETS", f"{league_stats['cleanSheet'].sum():.0f}")
-    
-    st.markdown("---")
-    
-    # ATTACK SECTION
-    st.markdown("<div class='tactical-header'>OFFENSIVE PRODUCTION</div>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        goals_by_league = filtered_df.groupby('league_name')['goals'].sum().sort_values(ascending=True)
-        fig_goals = create_horizontal_bar_chart(
-            dict(goals_by_league),
-            "GOALS VOLUME BY LEAGUE",
-            colors_list=['#00B8C9']
-        )
-        st.plotly_chart(fig_goals, use_container_width=True)
-    with col2:
-        xg_by_league = filtered_df.groupby('league_name')['expectedGoals'].sum().sort_values(ascending=True)
-        fig_xg = create_horizontal_bar_chart(
-            dict(xg_by_league),
-            "EXPECTED GOALS (xG) BY LEAGUE",
-            colors_list=['#145D6D']
-        )
-        st.plotly_chart(fig_xg, use_container_width=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        shots_by_league = filtered_df.groupby('league_name')['totalShots'].sum().sort_values(ascending=True)
-        fig_shots = create_horizontal_bar_chart(
-            dict(shots_by_league),
-            "SHOT VOLUME BY LEAGUE",
-            colors_list=['#37E6F7']
-        )
-        st.plotly_chart(fig_shots, use_container_width=True)
-    with col2:
-        bcc_by_league = filtered_df.groupby('league_name').apply(
-            lambda x: calculate_big_chance_conversion(x['goals'].sum(), x['bigChancesCreated'].sum())
-        ).sort_values(ascending=True)
-        fig_bcc = create_horizontal_bar_chart(
-            dict(bcc_by_league),
-            "BIG CHANCE CONVERSION RATE (%)",
-            colors_list=['#E8F5E9']
-        )
-        st.plotly_chart(fig_bcc, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # PLAYMAKING SECTION
-    st.markdown("<div class='tactical-header'>CREATION & PROGRESSION</div>", unsafe_allow_html=True)
-    
-    playmaking_by_league = filtered_df.groupby('league_name').agg({
-        'bigChancesCreated': 'sum',
-        'keyPasses': 'sum',
-        'successfulDribbles': 'sum'
-    }).reset_index()
-    
-    max_bcc = playmaking_by_league['bigChancesCreated'].max()
-    max_kp = playmaking_by_league['keyPasses'].max()
-    max_drb = playmaking_by_league['successfulDribbles'].max()
-    
-    fig_radar_playmaking = go.Figure()
-    pm_colors = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
-    
-    for idx, (_, row) in enumerate(playmaking_by_league.iterrows()):
-        line_color = pm_colors[idx % len(pm_colors)]
-        fill_color = hex_to_rgba(line_color, 0.2)
-        
-        fig_radar_playmaking.add_trace(go.Scatterpolar(
-            r=[
-                (row['bigChancesCreated'] / max_bcc * 100) if max_bcc > 0 else 0,
-                (row['keyPasses'] / max_kp * 100) if max_kp > 0 else 0,
-                (row['successfulDribbles'] / max_drb * 100) if max_drb > 0 else 0
-            ],
-            theta=['Big Chances Created', 'Key Passes', 'Successful Take-ons'],
-            fill='toself',
-            name=row['league_name'],
-            line_color=line_color,
-            fillcolor=fill_color
-        ))
-    
-    fig_radar_playmaking.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
-            angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
-        ),
-        title=dict(text="PROGRESSION RADAR BY COMPETITION", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-        paper_bgcolor="#0D1C25",
-        plot_bgcolor="#0D1C25",
-        font=dict(color="#F5F7FA"),
-        height=500,
-        legend=dict(font=dict(family="Inter", color="#A7BAC6", size=12))
+    # -----------------------------------------------------------
+    # DATA LAYER LOGIC FOR INTERCONNECTED RADARS/LEADERBOARDS
+    # -----------------------------------------------------------
+    # Enforce safe conversion computation array extensions
+    scouting_base = filtered_df.copy()
+    scouting_base['big_chance_conv'] = scouting_base.apply(
+        lambda r: calculate_big_chance_conversion(r['goals'], r['bigChancesCreated']), axis=1
     )
-    st.plotly_chart(fig_radar_playmaking, use_container_width=True)
     
-    st.markdown("---")
-    
-    # PASSING SECTION
-    st.markdown("<div class='tactical-header'>BALL RETENTION & DISTRIBUTION</div>", unsafe_allow_html=True)
-    
+    # 1. ATTACK SECTION
+    st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION — LEADERBOARDS</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        acc_passes_by_league = filtered_df.groupby('league_name')['accuratePasses'].sum().sort_values(ascending=True)
-        fig_acc_passes = create_horizontal_bar_chart(
-            dict(acc_passes_by_league),
-            "COMPLETED PASSES",
-            colors_list=['#00B8C9']
-        )
-        st.plotly_chart(fig_acc_passes, use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'goals', 'player', "GOALS REGISTERED"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'totalShots', 'player', "SHOT VOLUME"), use_container_width=True)
     with col2:
-        touches_by_league = filtered_df.groupby('league_name')['touches'].sum().sort_values(ascending=True)
-        fig_touches = create_horizontal_bar_chart(
-            dict(touches_by_league),
-            "TOTAL TOUCH VOLUME",
-            colors_list=['#145D6D']
-        )
-        st.plotly_chart(fig_touches, use_container_width=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        pass_acc_by_league = filtered_df.groupby('league_name')['accuratePassesPercentage'].mean().sort_values(ascending=True)
-        fig_pass_acc = create_horizontal_bar_chart(
-            dict(pass_acc_by_league),
-            "MEAN PASS COMPLETION RATE (%)",
-            colors_list=['#37E6F7']
-        )
-        st.plotly_chart(fig_pass_acc, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # DEFENCE SECTION
-    st.markdown("<div class='tactical-header'>DEFENSIVE ACTIONS & SHAPE</div>", unsafe_allow_html=True)
-    
-    defence_by_league = filtered_df.groupby('league_name').agg({
-        'tackles': 'sum',
-        'interceptions': 'sum',
-        'clearances': 'sum',
-        'aerialDuelsWon': 'sum',
-        'groundDuelsWon': 'sum'
-    }).reset_index()
-    
-    max_tck = defence_by_league['tackles'].max()
-    max_int = defence_by_league['interceptions'].max()
-    max_clr = defence_by_league['clearances'].max()
-    max_aer = defence_by_league['aerialDuelsWon'].max()
-    max_grd = defence_by_league['groundDuelsWon'].max()
-    
-    fig_radar_defence = go.Figure()
-    def_colors = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
-    
-    for idx, (_, row) in enumerate(defence_by_league.iterrows()):
-        line_color = def_colors[idx % len(def_colors)]
-        fill_color = hex_to_rgba(line_color, 0.2)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'expectedGoals', 'player', "EXPECTED GOALS (xG)"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'big_chance_conv', 'player', "BIG CHANCE CONVERSION %"), use_container_width=True)
         
-        fig_radar_defence.add_trace(go.Scatterpolar(
-            r=[
-                (row['tackles'] / max_tck * 100) if max_tck > 0 else 0,
-                (row['interceptions'] / max_int * 100) if max_int > 0 else 0,
-                (row['clearances'] / max_clr * 100) if max_clr > 0 else 0,
-                (row['aerialDuelsWon'] / max_aer * 100) if max_aer > 0 else 0,
-                (row['groundDuelsWon'] / max_grd * 100) if max_grd > 0 else 0
-            ],
-            theta=['Tackles Won', 'Interceptions', 'Clearances', 'Aerial Duels Won', 'Ground Duels Won'],
-            fill='toself',
-            name=row['league_name'],
-            line_color=line_color,
-            fillcolor=fill_color
-        ))
-    
-    fig_radar_defence.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, 100], gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)),
-            angularaxis=dict(gridcolor="#145D6D", linecolor="#145D6D", tickfont=dict(family="Bebas Neue", size=16, color="#F5F7FA"))
-        ),
-        title=dict(text="DEFENSIVE INTENSITY RADAR", font=dict(family="Bebas Neue", size=22, color="#F5F7FA")),
-        paper_bgcolor="#0D1C25",
-        plot_bgcolor="#0D1C25",
-        font=dict(color="#F5F7FA"),
-        height=500,
-        legend=dict(font=dict(family="Inter", color="#A7BAC6", size=12))
-    )
-    st.plotly_chart(fig_radar_defence, use_container_width=True)
-    
     st.markdown("---")
     
-    # GOALKEEPER SECTION
-    st.markdown("<div class='tactical-header'>SHOT STOPPING & SWEEPING</div>", unsafe_allow_html=True)
-    
-    gk_data = identify_gk_players(filtered_df)
-    gk_by_league = gk_data.groupby('league_name').agg({
-        'saves': 'sum',
-        'cleanSheet': 'sum',
-        'highClaims': 'sum',
-        'errorLeadToGoal': 'sum'
-    }).reset_index()
-    
+    # 2. PLAYMAKING SECTION
+    st.markdown("<div class='tactical-header'>PLAYMAKING & CREATIVITY PROFILE</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        saves_by_league = gk_by_league.set_index('league_name')['saves'].sort_values(ascending=True)
-        fig_saves = create_horizontal_bar_chart(
-            dict(saves_by_league),
-            "SAVES VOLUME",
-            colors_list=['#00B8C9']
-        )
-        st.plotly_chart(fig_saves, use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'keyPasses', 'player', "KEY PASSES VOLUME"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'bigChancesCreated', 'player', "BIG CHANCES CREATED"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'successfulDribbles', 'player', "SUCCESSFUL TAKE-ONS (DRIBBLES)"), use_container_width=True)
     with col2:
-        cs_by_league = gk_by_league.set_index('league_name')['cleanSheet'].sort_values(ascending=True)
-        fig_cs = create_horizontal_bar_chart(
-            dict(cs_by_league),
-            "CLEAN SHEETS REGISTERED",
-            colors_list=['#145D6D']
-        )
-        st.plotly_chart(fig_cs, use_container_width=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        claims_by_league = gk_by_league.set_index('league_name')['highClaims'].sort_values(ascending=True)
-        fig_claims = create_horizontal_bar_chart(
-            dict(claims_by_league),
-            "HIGH CLAIMS (AERIAL DOMINANCE)",
-            colors_list=['#37E6F7']
-        )
-        st.plotly_chart(fig_claims, use_container_width=True)
-    with col2:
-        errors_by_league = gk_by_league.set_index('league_name')['errorLeadToGoal'].sort_values(ascending=True)
-        fig_errors = create_horizontal_bar_chart(
-            dict(errors_by_league),
-            "ERRORS LEADING TO GOALS",
-            colors_list=['#A7BAC6']
-        )
-        st.plotly_chart(fig_errors, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # TOP PLAYERS TABLES BY LEAGUE
-    st.markdown("<div class='tactical-header'>TOP PERCENTILE PERFORMERS</div>", unsafe_allow_html=True)
-    
-    for league in selected_leagues:
-        league_df = filtered_df[filtered_df['league_name'] == league]
-        st.markdown(f"<h3 style='color: #E8F5E9; border-bottom: 2px solid #145D6D; display: inline-block; padding-bottom: 4px; margin-top: 30px;'>{league} STATISTICAL LEADERS</h3>", unsafe_allow_html=True)
+        # Multi-player layout engine initialization for top creators
+        top_creators_df = scouting_base.nlargest(5, 'bigChancesCreated')
+        max_kp_c = max(top_creators_df['keyPasses'].max(), 1)
+        max_bcc_c = max(top_creators_df['bigChancesCreated'].max(), 1)
+        max_drb_c = max(top_creators_df['successfulDribbles'].max(), 1)
         
+        fig_pm_radar = go.Figure()
+        radar_palette = ['#00B8C9', '#37E6F7', '#E8F5E9', '#A7BAC6', '#6C8594']
+        
+        for idx, (_, p_row) in enumerate(top_creators_df.iterrows()):
+            color = radar_palette[idx % len(radar_palette)]
+            fig_pm_radar.add_trace(go.Scatterpolar(
+                r=[
+                    (p_row['keyPasses'] / max_kp_c * 100),
+                    (p_row['bigChancesCreated'] / max_bcc_c * 100),
+                    (p_row['successfulDribbles'] / max_drb_c * 100)
+                ],
+                theta=['Key Passes', 'Big Chances Created', 'Successful Dribbles'],
+                fill='toself',
+                name=p_row['player'],
+                line=dict(color=color, width=3),
+                fillcolor=hex_to_rgba(color, 0.15)
+            ))
+        fig_pm_radar = apply_sofascore_radar_layout(fig_pm_radar, "CREATIVE ENGAGEMENT MATRIX (TOP 5 CREATORS)")
+        st.plotly_chart(fig_pm_radar, use_container_width=True)
+        
+    st.markdown("---")
+    
+    # 3. POSSESSION SECTION
+    st.markdown("<div class='tactical-header'>POSSESSION & RETENTION HUBS</div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'accuratePasses', 'player', "COMPLETED DISTRIBUTION VOLUME"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'touches', 'player', "BALL ENGAGEMENT (TOUCHES)"), use_container_width=True)
+    with col2:
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'accuratePassesPercentage', 'player', "PASS COMPLETION ACCURACY %"), use_container_width=True)
+        
+    st.markdown("---")
+    
+    # 4. DEFENDING SECTION
+    st.markdown("<div class='tactical-header'>DEFENSIVE ARCHITECTURE & GRIT</div>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'tackles', 'player', "TACKLES STRUCTURALLY WON"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'interceptions', 'player', "INTERCEPTIONS), TURNOVER PROFILE"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(scouting_base, 'clearances', 'player', "TACTICAL CLEARANCES"), use_container_width=True)
+    with col2:
+        # Multi-player structural profile layout engine for top defensive assets
+        top_defenders_df = scouting_base.nlargest(5, 'tackles')
+        max_tck_d = max(top_defenders_df['tackles'].max(), 1)
+        max_int_d = max(top_defenders_df['interceptions'].max(), 1)
+        max_clr_d = max(top_defenders_df['clearances'].max(), 1)
+        
+        fig_def_radar = go.Figure()
+        for idx, (_, p_row) in enumerate(top_defenders_df.iterrows()):
+            color = radar_palette[idx % len(radar_palette)]
+            fig_def_radar.add_trace(go.Scatterpolar(
+                r=[
+                    (p_row['tackles'] / max_tck_d * 100),
+                    (p_row['interceptions'] / max_int_d * 100),
+                    (p_row['clearances'] / max_clr_d * 100)
+                ],
+                theta=['Tackles Won', 'Interceptions', 'Clearances'],
+                fill='toself',
+                name=p_row['player'],
+                line=dict(color=color, width=3),
+                fillcolor=hex_to_rgba(color, 0.15)
+            ))
+        fig_def_radar = apply_sofascore_radar_layout(fig_def_radar, "DEFENSIVE EFFICIENCY MATRIX (TOP 5 DEFENDERS)")
+        st.plotly_chart(fig_def_radar, use_container_width=True)
+        
+    st.markdown("---")
+    
+    # 5. GOALKEEPING SECTION
+    st.markdown("<div class='tactical-header'>GOALKEEPING SECURITY LAYER</div>", unsafe_allow_html=True)
+    gk_scouting_base = identify_gk_players(scouting_base)
+    
+    if len(gk_scouting_base) > 0:
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.9rem; color: #00B8C9; font-weight: 700; margin-bottom: 5px;'>// OFFENSIVE THREAT</p>", unsafe_allow_html=True)
-            top_attackers = league_df.nlargest(5, 'goals')[['player', 'team', 'goals', 'assists', 'totalShots']]
-            top_attackers.columns = ['Player', 'Club', 'GLS', 'AST', 'SHT']
-            st.dataframe(top_attackers, use_container_width=True, hide_index=True)
-            
-            st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.9rem; color: #00B8C9; font-weight: 700; margin-top: 20px; margin-bottom: 5px;'>// CREATIVE HUBS</p>", unsafe_allow_html=True)
-            top_playmakers = league_df.nlargest(5, 'bigChancesCreated')[['player', 'team', 'bigChancesCreated', 'keyPasses', 'successfulDribbles']]
-            top_playmakers.columns = ['Player', 'Club', 'BCC', 'KP', 'DRB']
-            st.dataframe(top_playmakers, use_container_width=True, hide_index=True)
-        
+            st.plotly_chart(create_ranked_scouting_bar(gk_scouting_base, 'saves', 'player', "SAVES EXECUTED"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(gk_scouting_base, 'cleanSheet', 'player', "CLEAN SHEETS SECURED"), use_container_width=True)
         with col2:
-            st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.9rem; color: #37E6F7; font-weight: 700; margin-bottom: 5px;'>// DISTRIBUTION ENGINES</p>", unsafe_allow_html=True)
-            top_passers = league_df.nlargest(5, 'accuratePasses')[['player', 'team', 'accuratePasses', 'touches', 'accuratePassesPercentage']]
-            top_passers.columns = ['Player', 'Club', 'CMP', 'TCH', 'CMP%']
-            top_passers['CMP%'] = top_passers['CMP%'].round(1)
-            st.dataframe(top_passers, use_container_width=True, hide_index=True)
-            
-            st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.9rem; color: #37E6F7; font-weight: 700; margin-top: 20px; margin-bottom: 5px;'>// DEFENSIVE ANCHORS</p>", unsafe_allow_html=True)
-            top_defenders = league_df.nlargest(5, 'tackles')[['player', 'team', 'tackles', 'interceptions', 'clearances']]
-            top_defenders.columns = ['Player', 'Club', 'TCK', 'INT', 'CLR']
-            st.dataframe(top_defenders, use_container_width=True, hide_index=True)
-        
-        gk_league = identify_gk_players(league_df)
-        if len(gk_league) > 0:
-            st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.9rem; color: #A7BAC6; font-weight: 700; margin-top: 20px; margin-bottom: 5px;'>// SHOT STOPPERS</p>", unsafe_allow_html=True)
-            top_gk = gk_league.nlargest(5, 'saves')[['player', 'team', 'saves', 'cleanSheet', 'highClaims', 'errorLeadToGoal']]
-            top_gk.columns = ['Player', 'Club', 'SV', 'CS', 'CLAIMS', 'ERR']
-            st.dataframe(top_gk, use_container_width=True, hide_index=True)
+            st.plotly_chart(create_ranked_scouting_bar(gk_scouting_base, 'highClaims', 'player', "HIGH CLAIMS (AERIAL CAPTURE)"), use_container_width=True)
+    else:
+        st.info("NO ACTIVE GOALKEEPER PATTERNS CAPTURED UNDER ISOLATED CRITERIA.")
 
 # ═══════════════════════════════════════════════════════════════
 # TAB 2: CLUB-WISE DATA
@@ -1063,9 +977,9 @@ with tab3:
             ))
             fig_playmaking.add_trace(go.Scatterpolar(
                 r=[
-                    (p2_data['bigChancesCreated'] / max_bcc * 100),
-                    (p2_data['keyPasses'] / max_kp * 100),
-                    (p2_data['successfulDribbles'] / max_drb * 100)
+                    (p1_data['bigChancesCreated'] / max_bcc * 100),
+                    (p1_data['keyPasses'] / max_kp * 100),
+                    (p1_data['successfulDribbles'] / max_drb * 100)
                 ],
                 theta=['BCC', 'Key Passes', 'Take-ons'],
                 fill='toself',
