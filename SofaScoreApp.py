@@ -811,17 +811,17 @@ with tab3:
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PLAYMAKING MATRIX"), use_container_width=True)
             st.markdown("---")
 
-            # ── PASSING PROFILE (NEW) ─────────────────────────────
+ # ── PASSING PROFILE (NEW) ─────────────────────────────
             st.markdown("<p class='section-label'>// PASSING PROFILE</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
                 p1_alb = p1_data['accurateLongBalls'] if 'accurateLongBalls' in p1_data else 0
                 p2_alb = p2_data['accurateLongBalls'] if 'accurateLongBalls' in p2_data else 0
                 passing_metrics = {
-                    'Touches':             (int(p1_data['touches']),          int(p2_data['touches'])),
+                    'Touches':             (int(p1_data['touches']),           int(p2_data['touches'])),
                     'Key Passes':          (int(p1_data['keyPasses']),         int(p2_data['keyPasses'])),
                     'Big Chances Created': (int(p1_data['bigChancesCreated']), int(p2_data['bigChancesCreated'])),
-                    'Accurate Long Balls': (int(p1_alb),                      int(p2_alb)),
+                    'Accurate Long Balls': (int(p1_alb),                       int(p2_alb)),
                 }
                 pass_cmp_df = pd.DataFrame({'Passing Metric': list(passing_metrics.keys()),
                                             player1: [v[0] for v in passing_metrics.values()],
@@ -833,19 +833,19 @@ with tab3:
                 max_bcc2 = max(p1_data['bigChancesCreated'],  p2_data['bigChancesCreated'],  1)
                 max_alb  = max(p1_alb, p2_alb, 1)
                 fig_passing = go.Figure()
+                
+                # FIX: Removed the duplicate touches metric, resulting in a 4-point radar
                 fig_passing.add_trace(go.Scatterpolar(
                     r=[(p1_data['touches']/max_tch*100), (p1_data['keyPasses']/max_kp*100),
-                       (p1_data['bigChancesCreated']/max_bcc2*100), (p1_data['touches']/max_tch*100),
-                       (p1_alb/max_alb*100)],
-                    theta=['Touches','Key Passes','Big Chances Created','Touches (volume)','Accurate Long Balls'],
+                       (p1_data['bigChancesCreated']/max_bcc2*100), (p1_alb/max_alb*100)],
+                    theta=['Touches', 'Key Passes', 'Big Chances', 'Long Balls'],
                     fill='toself', name=player1,
                     line=dict(color='#00D9FF', width=3), fillcolor=hex_to_rgba('#00D9FF', 0.2)
                 ))
                 fig_passing.add_trace(go.Scatterpolar(
                     r=[(p2_data['touches']/max_tch*100), (p2_data['keyPasses']/max_kp*100),
-                       (p2_data['bigChancesCreated']/max_bcc2*100), (p2_data['touches']/max_tch*100),
-                       (p2_alb/max_alb*100)],
-                    theta=['Touches','Key Passes','Big Chances Created','Touches (volume)','Accurate Long Balls'],
+                       (p2_data['bigChancesCreated']/max_bcc2*100), (p2_alb/max_alb*100)],
+                    theta=['Touches', 'Key Passes', 'Big Chances', 'Long Balls'],
                     fill='toself', name=player2,
                     line=dict(color='#00FF88', width=3), fillcolor=hex_to_rgba('#00FF88', 0.2)
                 ))
