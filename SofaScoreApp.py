@@ -65,33 +65,38 @@ st.markdown("""
             font-family: 'Inter', sans-serif !important;
             transition: all 0.2s ease !important;
         }
-        div[data-baseweb="select"] > div:hover {
-            border-color: var(--accent-primary) !important;
-            box-shadow: 0 0 8px rgba(14, 124, 134, 0.1) !important;
-        }
-        div[data-baseweb="popover"] > div {
-            background-color: var(--bg-card) !important;
-            border: 1px solid var(--accent-muted) !important;
-            border-radius: 6px !important;
-        }
-        li[role="option"] {
-            background-color: transparent !important;
-            color: var(--text-primary) !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-        li[role="option"]:hover { background-color: rgba(14, 124, 134, 0.2) !important; }
-        span[data-baseweb="tag"]
-        span[data-baseweb="tag"] * {
-    background-color: transparent !important;
-}{
+
+        /* ── SELECTED TAGS (Clean, readable spacing with no text clipping) ── */
+        span[data-baseweb="tag"] {
             background-color: rgba(14, 124, 134, 0.3) !important;
             color: var(--accent-secondary) !important;
             border: 1px solid var(--accent-primary) !important;
             font-family: 'Inter', sans-serif !important;
             font-size: 0.85rem !important;
             border-radius: 4px !important;
-            padding: 4px 8px !important;
+            padding: 2px 6px !important;
+            margin: 4px !important;
+            display: inline-flex !important;
+            align-items: center !important;
         }
+
+        /* Fix inner text clipping & strip systemic dark boxes */
+        span[data-baseweb="tag"] * {
+            background-color: transparent !important;
+            overflow: visible !important;
+        }
+
+        span[data-baseweb="tag"] > div:first-child {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+
+        li[role="option"] {
+            background-color: transparent !important;
+            color: var(--text-primary) !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        li[role="option"]:hover { background-color: rgba(14, 124, 134, 0.2) !important; }
         [data-testid="stMetric"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
