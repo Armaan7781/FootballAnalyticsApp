@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(
     page_title="European Football Analytics Hub",
-    page_icon="🕸️",
+    page_icon="⚽",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -406,15 +406,7 @@ def df_to_plain_table(df):
 # CHART FACTORIES
 # ═══════════════════════════════════════════════════════════════
 RADAR_COLORS = ['#00B4D8', '#0096C7', '#90BE6D', '#F9C74F', '#F98444', '#F94144', '#577590']
-
-# New Rank-Based Gradient Palette for Top 5 Bar Charts
-RANK_COLORS = [
-    "#0E7C86",  # Rank 1 (Darkest)
-    "#3B99A3",  # Rank 2
-    "#6EB6BD",  # Rank 3
-    "#A7D2D7",  # Rank 4
-    "#DCECEF"   # Rank 5 (Lightest)
-]
+BAR_COLORS = ['#00B4D8', '#0096C7', '#90BE6D', '#F9C74F', '#577590']
 
 def apply_sofascore_radar_layout(fig, title):
     fig.update_layout(
@@ -429,7 +421,7 @@ def apply_sofascore_radar_layout(fig, title):
             angularaxis=dict(
                 gridcolor="rgba(255,255,255,0.15)",
                 linecolor="rgba(255,255,255,0.15)",
-                tickfont=dict(family="Inter", size=13, color="#F5F7FA", weight=600)
+                tickfont=dict(family="Inter", size=13, color="#F5F7FA", weight=600) # Fixed: removed quotes around 600
             )
         ),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -437,7 +429,7 @@ def apply_sofascore_radar_layout(fig, title):
         font=dict(color="#F5F7FA"),
         title=dict(
             text=title,
-            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700),
+            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), # Fixed: removed quotes around 700
             y=0.96, x=0.04, xanchor='left', yanchor='top'
         ),
         height=480,
@@ -455,16 +447,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     values = sorted_df[value_col].tolist()
     metrics_rev = list(reversed(metrics))
     values_rev = list(reversed(values))
-    
-    # Map colors: Rank 1 gets index 0 (Darkest), Rank 5 gets index 4 (Lightest)
-    num_items = len(metrics_rev)
-    bar_colors_rev = list(reversed(RANK_COLORS[:num_items]))
-    
-    text_sizes = [11] * num_items
-    text_colors = ["#030B12"] * num_items
-    if num_items > 0:
-        text_sizes[-1] = 16  # Highlight Rank 1
-        text_colors[-1] = "#FFFFFF" # Light text on dark Rank 1 bar
+    bar_colors_rev = [BAR_COLORS[len(metrics_rev) - 1 - i] for i in range(len(metrics_rev))]
     
     fig = go.Figure(data=[
         go.Bar(
@@ -472,14 +455,14 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
             marker=dict(color=bar_colors_rev, line=dict(width=0)),
             text=[f'{v:.1f}' if isinstance(v, float) else f'{v}' for v in values_rev],
             textposition='auto',
-            textfont=dict(family="JetBrains Mono", color=text_colors, size=text_sizes, weight="bold"),
+            textfont=dict(family="JetBrains Mono", color="#030B12", weight="bold"),
             hovertemplate='<b style="font-family:Inter;color:#F5F7FA;">%{y}</b><br><span style="font-family:JetBrains Mono;color:#F5F7FA;">%{x:.2f}</span><extra></extra>'
         )
     ])
     fig.update_layout(
         title=dict(
             text=title,
-            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700),
+            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), # Fixed: removed quotes around 700
             y=0.96, x=0.0, xanchor='left', yanchor='top'
         ),
         xaxis=dict(
@@ -487,7 +470,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
             tickfont=dict(family="JetBrains Mono", color="#6C8594", size=10),
             gridcolor="#145D6D", gridwidth=0.5, zeroline=False
         ),
-        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight=600)),
+        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight=600)), # Fixed: removed quotes around 600
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         height=320,
@@ -975,8 +958,8 @@ with tab3:
         with col2:
             p2_type = "GOALKEEPER" if p2_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #0096C7; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #0096C7; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #90BE6D; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #90BE6D; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player2}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} | {p2_data['league_name']}</div>
                 </div>
@@ -1043,7 +1026,7 @@ with tab3:
                        (p2_data['bigChancesCreated']/max_bcc*100), (p2_pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=player2,
-                    line=dict(color='#0096C7', width=3.5), fillcolor=hex_to_rgba('#0096C7', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "Playmaking Radar"), use_container_width=True)
             st.markdown("---")
@@ -1088,7 +1071,7 @@ with tab3:
                        (p2_alb/max_alb*100), (p2_data['touches']/max_tch*100), (p2_pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=player2,
-                    line=dict(color='#0096C7', width=3.5), fillcolor=hex_to_rgba('#0096C7', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "Passing Radar"), use_container_width=True)
             st.markdown("---")
@@ -1130,7 +1113,7 @@ with tab3:
                        (p2_data['clearances']/max_clr*100), (p2_data['aerialDuelsWon']/max_aer*100), (rec2/max_rec*100)],
                     theta=['Tackles','Interceptions','Clearances','Aerial Duels','Ball Recovery'],
                     fill='toself', name=player2,
-                    line=dict(color='#0096C7', width=3.5), fillcolor=hex_to_rgba('#0096C7', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "Defensive Radar"), use_container_width=True)
 
@@ -1176,7 +1159,7 @@ with tab3:
                        (p2_alb/max_alb*100), (p2_svc/max_svc*100), (p2_pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=player2,
-                    line=dict(color='#0096C7', width=3.5), fillcolor=hex_to_rgba('#0096C7', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "Goalkeeper Radar"), use_container_width=True)
         else:
