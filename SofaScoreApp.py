@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(
     page_title="European Football Analytics Hub",
-    page_icon="🕸️",
+    page_icon="⚽",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -48,7 +48,7 @@ st.markdown("""
         [data-testid="stSidebar"] {
             background-color: var(--bg-sidebar) !important;
             border-right: 1px solid var(--accent-muted) !important;
-            padding-top: 1rem;
+            padding-top: clamp(0.5rem, 1vw, 1rem);
         }
         [data-testid="stSidebarHeader"], [data-testid="stSidebarContent"] {
             background-color: var(--bg-sidebar) !important;
@@ -57,7 +57,7 @@ st.markdown("""
             font-family: 'Bebas Neue', sans-serif;
             color: var(--accent-secondary);
             letter-spacing: 2px;
-            font-size: 1.4rem;
+            font-size: clamp(1.2rem, 1.5vw, 1.5rem);
             margin-bottom: 10px;
             text-transform: uppercase;
             border-bottom: 1px solid var(--accent-muted);
@@ -65,7 +65,7 @@ st.markdown("""
         }
         .stMultiSelect label p {
             font-family: 'Inter', sans-serif !important;
-            font-size: 0.75rem !important;
+            font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important;
             font-weight: 700 !important;
             color: var(--text-secondary) !important;
             text-transform: uppercase !important;
@@ -100,13 +100,14 @@ st.markdown("""
         div[data-baseweb="select"] span {
             color: var(--text-primary) !important;
             background-color: transparent !important;
+            font-size: clamp(0.75rem, 0.9vw, 0.85rem) !important;
         }
         li[role="option"] {
             background-color: transparent !important;
             color: var(--text-primary) !important;
             font-family: 'Inter', sans-serif !important;
-            font-size: 0.85rem !important;
-            padding: 8px 12px !important;
+            font-size: clamp(0.75rem, 0.9vw, 0.85rem) !important;
+            padding: clamp(6px, 0.8vw, 8px) clamp(8px, 1vw, 12px) !important;
         }
         li[role="option"]:hover {
             background-color: rgba(14, 124, 134, 0.2) !important;
@@ -123,10 +124,12 @@ st.markdown("""
             background-color: transparent !important;
             color: var(--accent-tertiary) !important;
             font-family: 'Inter', sans-serif !important;
-            font-size: 0.75rem !important;
+            font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important;
         }
         span[data-baseweb="tag"] svg {
             fill: var(--accent-tertiary) !important;
+            width: clamp(10px, 1.2vw, 12px) !important;
+            height: clamp(10px, 1.2vw, 12px) !important;
         }
         span[data-baseweb="tag"] span::before,
         span[data-baseweb="tag"] span::after {
@@ -137,8 +140,8 @@ st.markdown("""
             overflow: visible !important;
         }
         span[data-baseweb="tag"] > div:first-child {
-            padding-left: 6px !important;
-            padding-right: 6px !important;
+            padding-left: clamp(4px, 0.5vw, 6px) !important;
+            padding-right: clamp(4px, 0.5vw, 6px) !important;
         }
 
         /* ── METRICS & TABS ── */
@@ -146,7 +149,7 @@ st.markdown("""
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
             border-radius: 4px !important;
-            padding: 16px;
+            padding: clamp(10px, 1.5vw, 16px);
             box-shadow: none;
             border-left: 3px solid var(--accent-primary);
             transition: all 0.2s ease;
@@ -154,7 +157,7 @@ st.markdown("""
         [data-testid="stMetricLabel"] {
             color: var(--text-secondary);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+            font-size: clamp(0.65rem, 0.8vw, 0.75rem);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -162,7 +165,7 @@ st.markdown("""
         [data-testid="stMetricValue"] {
             color: var(--text-primary);
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.5rem;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
             line-height: 1.1;
         }
         [data-testid="stTabs"] button {
@@ -171,10 +174,10 @@ st.markdown("""
             border-bottom: 2px solid var(--accent-muted) !important;
             border-radius: 0 !important;
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.4rem;
+            font-size: clamp(1rem, 1.5vw, 1.4rem);
             letter-spacing: 1px;
             color: var(--text-muted) !important;
-            padding: 10px 24px;
+            padding: clamp(8px, 1vw, 10px) clamp(16px, 2vw, 24px);
             transition: all 0.2s;
         }
         [data-testid="stTabs"] button[aria-selected="true"] {
@@ -184,30 +187,34 @@ st.markdown("""
         }
 
         /* ── CUSTOM TABLE STYLES ── */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            border: 1px solid #145D6D;
+        }
         .scout-table {
             width: 100%;
             border-collapse: collapse;
             font-family: 'Inter', sans-serif;
-            font-size: 0.85rem;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #145D6D;
-            margin-bottom: 16px;
+            font-size: clamp(0.75rem, 0.9vw, 0.85rem);
         }
         .scout-table thead tr {
             background-color: #0D1C25;
             border-bottom: 1px solid #145D6D;
         }
         .scout-table thead th {
-            padding: 12px 14px;
+            padding: clamp(8px, 1vw, 12px) clamp(10px, 1.2vw, 14px);
             text-align: left;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
+            font-size: clamp(0.65rem, 0.8vw, 0.72rem);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-secondary);
             border: none;
+            white-space: nowrap;
         }
         .scout-table tbody tr {
             border-bottom: 1px solid rgba(20, 93, 109, 0.3);
@@ -217,9 +224,10 @@ st.markdown("""
         .scout-table tbody tr:last-child { border-bottom: none; }
         .scout-table tbody tr:hover { background-color: #132733; }
         .scout-table tbody td {
-            padding: 12px 14px;
+            padding: clamp(8px, 1vw, 12px) clamp(10px, 1.2vw, 14px);
             color: var(--text-primary);
             vertical-align: middle;
+            white-space: nowrap;
         }
         .scout-table tbody td:first-child {
             font-weight: 600;
@@ -231,15 +239,16 @@ st.markdown("""
         }
         .rank-badge {
             display: inline-block;
-            width: 22px; height: 22px;
-            line-height: 22px;
+            width: clamp(18px, 2vw, 22px); 
+            height: clamp(18px, 2vw, 22px);
+            line-height: clamp(18px, 2vw, 22px);
             text-align: center;
             border-radius: 2px;
             background: rgba(14, 124, 134, 0.15);
             border: 1px solid #0E7C86;
             color: var(--accent-secondary);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
+            font-size: clamp(0.6rem, 0.7vw, 0.7rem);
             font-weight: 700;
             margin-right: 8px;
         }
@@ -251,47 +260,50 @@ st.markdown("""
             border-bottom: 1px solid var(--accent-muted);
             padding-bottom: 6px;
             margin-bottom: 20px;
-            margin-top: 40px;
-            font-size: 0.95rem;
+            margin-top: clamp(20px, 4vw, 40px);
+            font-size: clamp(0.85rem, 1.2vw, 1rem);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
         hr {
             border-color: var(--accent-muted);
             opacity: 0.4;
-            margin: 2.5rem 0;
+            margin: clamp(1.5rem, 3vw, 2.5rem) 0;
         }
         .section-label {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
             color: var(--text-primary);
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 0.9vw, 0.8rem);
             letter-spacing: 2px;
             text-transform: uppercase;
             border-bottom: 1px solid #145D6D;
             padding-bottom: 6px;
             margin-bottom: 16px;
         }
+        
+        /* ── DATA SUMMARY CARD ── */
         .opt-summary {
             background-color: #041018;
             border: 1px solid #145D6D;
             border-radius: 4px;
-            padding: 16px;
+            padding: clamp(12px, 1.5vw, 16px);
             margin-top: 20px;
         }
         .opt-summary-title {
             font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
+            font-size: clamp(0.65rem, 0.8vw, 0.75rem);
             font-weight: 700;
             color: var(--text-primary);
             letter-spacing: 1px;
             margin-bottom: 12px;
+            text-transform: uppercase;
         }
         .opt-summary-row {
             display: flex;
             justify-content: space-between;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 0.85vw, 0.8rem);
             color: var(--text-secondary);
             margin-bottom: 6px;
         }
@@ -304,6 +316,20 @@ st.markdown("""
             border-bottom: 1px dotted var(--accent-muted);
             margin: 0 8px 5px 8px;
             opacity: 0.5;
+        }
+
+        /* Responsive Overrides */
+        @media (max-width: 768px) {
+            .stTabs [data-baseweb="tab-list"] {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            [data-testid="stTabs"] button {
+                width: 100%;
+                text-align: center;
+                border-bottom: 1px solid var(--accent-muted) !important;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -389,7 +415,7 @@ def df_to_scout_table(df, col_rename=None):
             else:
                 cells += f"<td>{val}</td>"
         rows_html += f"<tr>{cells}</tr>"
-    return f"<table class='scout-table'><thead><tr>{header}</tr></thead><tbody>{rows_html}</tbody></table>"
+    return f"<div class='table-container'><table class='scout-table'><thead><tr>{header}</tr></thead><tbody>{rows_html}</tbody></table></div>"
 
 def df_to_plain_table(df):
     cols = df.columns.tolist()
@@ -400,13 +426,13 @@ def df_to_plain_table(df):
         for j, c in enumerate(cols):
             val = row[c]
             if j == 0:
-                cells += f"<td style='color:#63AEB5;font-weight:600;'>{val}</td>"
+                cells += f"<td style='color:var(--accent-secondary);font-weight:600;'>{val}</td>"
             elif isinstance(val, float):
                 cells += f"<td>{val:.2f}</td>"
             else:
                 cells += f"<td>{val}</td>"
         rows_html += f"<tr>{cells}</tr>"
-    return f"<table class='scout-table'><thead><tr>{header}</tr></thead><tbody>{rows_html}</tbody></table>"
+    return f"<div class='table-container'><table class='scout-table'><thead><tr>{header}</tr></thead><tbody>{rows_html}</tbody></table></div>"
 
 # ═══════════════════════════════════════════════════════════════
 # CHART FACTORIES
@@ -420,13 +446,13 @@ def apply_sofascore_radar_layout(fig, title):
             bgcolor="#041018",
             radialaxis=dict(
                 visible=True, range=[0, 100],
-                gridcolor="rgba(255,255,255,0.1)",
-                linecolor="rgba(255,255,255,0.1)",
+                gridcolor="rgba(255,255,255,0.15)",
+                linecolor="rgba(255,255,255,0.15)",
                 tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)
             ),
             angularaxis=dict(
-                gridcolor="rgba(255,255,255,0.1)",
-                linecolor="rgba(255,255,255,0.1)",
+                gridcolor="rgba(255,255,255,0.15)",
+                linecolor="rgba(255,255,255,0.15)",
                 tickfont=dict(family="Inter", size=13, color="#F5F7FA", weight=700) 
             )
         ),
@@ -440,10 +466,11 @@ def apply_sofascore_radar_layout(fig, title):
         ),
         height=480,
         legend=dict(
-            orientation="v", yanchor="top", y=1, xanchor="left", x=1.15,
-            font=dict(family="Inter", size=12, color="#A7BAC6")
+            orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5,
+            font=dict(family="Inter", size=11, color="#A7BAC6")
         ),
-        margin=dict(l=80, r=180, t=70, b=60)
+        margin=dict(l=40, r=40, t=60, b=80),
+        autosize=True
     )
     return fig
 
@@ -468,7 +495,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     fig.update_layout(
         title=dict(
             text=title,
-            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), 
+            font=dict(family="Inter", size=14, color="#F5F7FA", weight=700), 
             y=0.96, x=0.0, xanchor='left', yanchor='top'
         ),
         xaxis=dict(
@@ -476,12 +503,13 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
             tickfont=dict(family="JetBrains Mono", color="#6C8594", size=10),
             gridcolor="#145D6D", gridwidth=0.5, zeroline=False
         ),
-        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight=600)),
+        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=11, weight=600)),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         height=320,
         showlegend=False,
-        margin=dict(l=150, r=20, t=60, b=40)
+        margin=dict(l=120, r=20, t=60, b=40),
+        autosize=True
     )
     return fig
 
@@ -532,9 +560,9 @@ st.sidebar.markdown(f"""
 # MAIN HUB
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
-    <div style="background-color: #030B12; padding: 30px 25px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 30px; border-radius: 4px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE</div>
-        <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; letter-spacing: 2px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
+    <div style="background-color: #030B12; padding: clamp(20px, 3vw, 30px) clamp(15px, 2.5vw, 25px); border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 30px; border-radius: 4px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: clamp(0.7rem, 0.8vw, 0.8rem); color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE</div>
+        <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: 2px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
     </div>
 """, unsafe_allow_html=True)
 
@@ -547,12 +575,15 @@ with tab1:
     st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
+    top_20_scorers = outfield_agg_df.nlargest(20, 'goals').copy()
+    top_20_scorers['goal_conversion'] = np.where(top_20_scorers['totalShots'] > 0, (top_20_scorers['goals'] / top_20_scorers['totalShots']) * 100, 0)
+
     with col1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goals', 'player', "Goals Registered"), use_container_width=True)
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "Shot Volume"), use_container_width=True)
     with col2:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "Expected Goals (xG)"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Best Goal Conversion Rate"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(top_20_scorers, 'goal_conversion', 'player', "Best Goal Conversion Rate"), use_container_width=True)
 
     st.markdown("---")
     st.markdown("<div class='tactical-header'>PLAYMAKING & CREATIVITY</div>", unsafe_allow_html=True)
@@ -580,7 +611,7 @@ with tab1:
                 r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                 theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "Playmaking Radar"), use_container_width=True)
 
@@ -611,7 +642,7 @@ with tab1:
                 r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
                 theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_pass_radar, "Passing Radar"), use_container_width=True)
 
@@ -639,7 +670,7 @@ with tab1:
                    (p_row['clearances']/max_clr*100), (p_row['aerialDuelsWon']/max_aer*100), (rec/max_rec*100)],
                 theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_def_radar, "Defensive Radar"), use_container_width=True)
 
@@ -656,7 +687,7 @@ with tab1:
             max_cs  = max(top_gk_df['cleanSheet'].max() if len(top_gk_df) else 1, 1)
             max_alb = max(top_gk_df.get('accurateLongBalls', pd.Series([0])).max(), 1)
             max_svc = max(top_gk_df.get('savesCaught', pd.Series([0])).max(), 1)
-            max_pen = max(top_gk_df.get('penaltySave', pd.Series([0])).max(), 1)
+            max_pen = max(top_gk_df.get('penaltySaves', pd.Series([0])).max(), 1)
             
             fig_gk_radar = go.Figure()
             for idx, (_, p_row) in enumerate(top_gk_df.iterrows()):
@@ -665,13 +696,13 @@ with tab1:
                 cs  = p_row.get('cleanSheet', 0)
                 alb = p_row.get('accurateLongBalls', 0)
                 svc = p_row.get('savesCaught', 0)
-                pen = p_row.get('penaltySave', 0)
+                pen = p_row.get('penaltySaves', 0)
                 
                 fig_gk_radar.add_trace(go.Scatterpolar(
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_gk_radar, "Goalkeeper Radar"), use_container_width=True)
     else:
@@ -725,7 +756,7 @@ with tab2:
                     r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "Passing Radar (Top 5 Teams)"), use_container_width=True)
 
@@ -749,7 +780,7 @@ with tab2:
                     r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm, "Playmaking Radar (Top 5 Teams)"), use_container_width=True)
             
@@ -772,7 +803,7 @@ with tab2:
                        (t_row['clearances']/max_clr_t*100), (t_row['aerialDuelsWon']/max_aer_t*100), (rec/max_rec_t*100)],
                     theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "Defensive Radar (Top 5 Teams)"), use_container_width=True)
             
@@ -783,7 +814,7 @@ with tab2:
             max_cs     = max(top_gk_teams['cleanSheet'].max() if len(top_gk_teams) else 1, 1)
             max_alb_gk = max(top_gk_teams.get('accurateLongBalls', pd.Series([1])).max(), 1)
             max_svc    = max(top_gk_teams.get('savesCaught', pd.Series([1])).max(), 1)
-            max_pen    = max(top_gk_teams.get('penaltySave', pd.Series([1])).max(), 1)
+            max_pen    = max(top_gk_teams.get('penaltySaves', pd.Series([1])).max(), 1)
             
             fig_team_gk = go.Figure()
             for idx, (_, t_row) in enumerate(top_gk_teams.iterrows()):
@@ -792,13 +823,13 @@ with tab2:
                 cs  = t_row.get('cleanSheet', 0)
                 alb = t_row.get('accurateLongBalls', 0)
                 svc = t_row.get('savesCaught', 0)
-                pen = t_row.get('penaltySave', 0)
+                pen = t_row.get('penaltySaves', 0)
                 
                 fig_team_gk.add_trace(go.Scatterpolar(
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb_gk*100), (svc/max_svc*100), (pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk, "Goalkeeper Radar (Top 5 Teams)"), use_container_width=True)
 
@@ -840,7 +871,7 @@ with tab2:
                     r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm_rad, "Playmaking Radar"), use_container_width=True)
 
@@ -868,9 +899,9 @@ with tab2:
                 pob = p_row.get('totalOppositionHalfPasses', 0)
                 fig_team_pass_rad.add_trace(go.Scatterpolar(
                     r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
-                    theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
+                    theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes in Opp Box'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass_rad, "Passing Radar"), use_container_width=True)
 
@@ -896,7 +927,7 @@ with tab2:
                        (p_row['clearances']/max_clr*100), (p_row['aerialDuelsWon']/max_aer*100), (rec/max_rec*100)],
                     theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_def_rad, "Defensive Radar"), use_container_width=True)
 
@@ -912,7 +943,7 @@ with tab2:
                 max_cs  = max(top_team_gk['cleanSheet'].max() if len(top_team_gk) else 1, 1)
                 max_alb = max(top_team_gk.get('accurateLongBalls', pd.Series([1])).max(), 1)
                 max_svc = max(top_team_gk.get('savesCaught', pd.Series([1])).max(), 1)
-                max_pen = max(top_team_gk.get('penaltySave', pd.Series([1])).max(), 1)
+                max_pen = max(top_team_gk.get('penaltySaves', pd.Series([1])).max(), 1)
                 
                 fig_team_gk_rad = go.Figure()
                 for idx, (_, p_row) in enumerate(top_team_gk.iterrows()):
@@ -921,13 +952,13 @@ with tab2:
                     cs  = p_row.get('cleanSheet', 0)
                     alb = p_row.get('accurateLongBalls', 0)
                     svc = p_row.get('savesCaught', 0)
-                    pen = p_row.get('penaltySave', 0)
+                    pen = p_row.get('penaltySaves', 0)
                     
                     fig_team_gk_rad.add_trace(go.Scatterpolar(
                         r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
                         theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                         fill='toself', name=p_row['player'],
-                        line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
+                        line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
                     ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk_rad, "Goalkeeper Radar"), use_container_width=True)
 
@@ -952,19 +983,19 @@ with tab3:
         with col1:
             p1_type = "GOALKEEPER" if p1_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00B4D8; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #00B4D8; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
-                    <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player1}</div>
-                    <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p1_data['team']} | {p1_data['league_name']}</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00B4D8; padding: clamp(15px, 2vw, 25px); margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #00B4D8; font-family: JetBrains Mono; font-size: clamp(0.65rem, 0.8vw, 0.75rem); letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
+                    <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: clamp(1.8rem, 3vw, 2.5rem); letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1; word-wrap: break-word;'>{player1}</div>
+                    <div style='color: var(--text-secondary); font-size: clamp(0.75rem, 0.9vw, 0.9rem); font-family: JetBrains Mono; text-transform: uppercase;'>{p1_data['team']} | {p1_data['league_name']}</div>
                 </div>
             """, unsafe_allow_html=True)
         with col2:
             p2_type = "GOALKEEPER" if p2_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #90BE6D; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #90BE6D; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
-                    <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player2}</div>
-                    <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} | {p2_data['league_name']}</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #90BE6D; padding: clamp(15px, 2vw, 25px); margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #90BE6D; font-family: JetBrains Mono; font-size: clamp(0.65rem, 0.8vw, 0.75rem); letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
+                    <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: clamp(1.8rem, 3vw, 2.5rem); letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1; word-wrap: break-word;'>{player2}</div>
+                    <div style='color: var(--text-secondary); font-size: clamp(0.75rem, 0.9vw, 0.9rem); font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} | {p2_data['league_name']}</div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -1022,14 +1053,14 @@ with tab3:
                        (p1_data['bigChancesCreated']/max_bcc*100), (p1_pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[(p2_data['successfulDribbles']/max_drb*100), (p2_foul/max_foul*100),
                        (p2_data['bigChancesCreated']/max_bcc*100), (p2_pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "Playmaking Radar"), use_container_width=True)
             st.markdown("---")
@@ -1067,14 +1098,14 @@ with tab3:
                        (p1_alb/max_alb*100), (p1_data['touches']/max_tch*100), (p1_pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_passing.add_trace(go.Scatterpolar(
                     r=[(p2_data['keyPasses']/max_kp*100), (p2_data['accuratePasses']/max_ap*100),
                        (p2_alb/max_alb*100), (p2_data['touches']/max_tch*100), (p2_pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "Passing Radar"), use_container_width=True)
             st.markdown("---")
@@ -1109,14 +1140,14 @@ with tab3:
                        (p1_data['clearances']/max_clr*100), (p1_data['aerialDuelsWon']/max_aer*100), (rec1/max_rec*100)],
                     theta=['Tackles','Interceptions','Clearances','Aerial Duels','Ball Recovery'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_defence.add_trace(go.Scatterpolar(
                     r=[(p2_data['tackles']/max_tck*100), (p2_data['interceptions']/max_int*100),
                        (p2_data['clearances']/max_clr*100), (p2_data['aerialDuelsWon']/max_aer*100), (rec2/max_rec*100)],
                     theta=['Tackles','Interceptions','Clearances','Aerial Duels','Ball Recovery'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "Defensive Radar"), use_container_width=True)
 
@@ -1128,8 +1159,8 @@ with tab3:
                 p2_alb = p2_data.get('accurateLongBalls', 0)
                 p1_svc = p1_data.get('savesCaught', 0)
                 p2_svc = p2_data.get('savesCaught', 0)
-                p1_pen = p1_data.get('penaltySave', 0)
-                p2_pen = p2_data.get('penaltySave', 0)
+                p1_pen = p1_data.get('penaltySaves', 0)
+                p2_pen = p2_data.get('penaltySaves', 0)
 
                 gk_metrics = {
                     'Saves':               (int(p1_data['saves']),           int(p2_data['saves'])),
@@ -1155,14 +1186,14 @@ with tab3:
                        (p1_alb/max_alb*100), (p1_svc/max_svc*100), (p1_pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_gk.add_trace(go.Scatterpolar(
                     r=[(p2_data['saves']/max_sv*100), (p2_data['cleanSheet']/max_cs*100),
                        (p2_alb/max_alb*100), (p2_svc/max_svc*100), (p2_pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "Goalkeeper Radar"), use_container_width=True)
         else:
