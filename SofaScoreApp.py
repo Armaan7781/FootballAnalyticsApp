@@ -481,7 +481,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["League Level Analysis", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
+tab1, tab2, tab3 = st.tabs(["LEAGUE LEVEL ANALYSIS", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
 
 # ═══════════════════════════════════════════════════════════════
 # TAB 1: League Level Analysis
