@@ -66,18 +66,36 @@ st.markdown("""
             transition: all 0.2s ease !important;
         }
 
-        /* ── SELECTED TAGS (Clean, readable spacing with no text clipping) ── */
+    /* ── SELECTED TAGS (Clean, readable spacing with no text clipping) ── */
         span[data-baseweb="tag"] {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
             background-color: rgba(14, 124, 134, 0.3) !important;
             color: var(--accent-secondary) !important;
             border: 1px solid var(--accent-primary) !important;
             font-family: 'Inter', sans-serif !important;
             font-size: 0.85rem !important;
             border-radius: 4px !important;
-            padding: 2px 6px !important;
             margin: 4px !important;
+            padding: 0 4px !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Remove the inner solid background and normalize tag content spacing */
+        span[data-baseweb="tag"] span {
+            background-color: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
             display: inline-flex !important;
             align-items: center !important;
+        }
+
+        /* Disable the Streamlit gradient mask on tag text */
+        span[data-baseweb="tag"] span::before,
+        span[data-baseweb="tag"] span::after {
+            display: none !important;
         }
 
         /* Fix inner text clipping & strip systemic dark boxes */
@@ -247,12 +265,7 @@ def load_and_preprocess_data():
         df = pd.read_csv(url).fillna(0)
         
         # Normalize text to remove special characters
-        df['player'] = df['player'].apply(
-            lambda name: ''.join(
-                c for c in unicodedata.normalize('NFD', str(name))
-                if unicodedata.category(c) != 'Mn'
-            )
-        )
+        df['player'] = df['player'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
         
         # FIX: Append team name to player name to create a unique identifier
         df['player'] = df['player'] + ' (' + df['team'] + ')'
