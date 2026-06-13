@@ -481,7 +481,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["LEAGUE LEVEL ANALYSIS", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
+tab1, tab2, tab3 = st.tabs(["LEAGUE LEVEL ANALYSIS", "CLUB TACTICAL PROFILES", "PLAYER COMPARION"])
 
 # ═══════════════════════════════════════════════════════════════
 # TAB 1: League Level Analysis
@@ -596,7 +596,7 @@ with tab2:
             st.plotly_chart(create_ranked_scouting_bar(team_agg, 'bigChancesCreated', 'team', "TEAM BIG CHANCES CREATED"), use_container_width=True)
 
         st.markdown("---")
-        st.markdown("<div class='tactical-header'>TEAM RADAR DOSSIERS (TOP 5 TEAMS BY METRIC)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='tactical-header'>TEAM PERFORMANCE - RADAR (TOP 5 TEAMS BY METRIC)</div>", unsafe_allow_html=True)
 
         # ── PASSING RADAR ──────────────────────────────────────
         top_passing_teams = team_agg.nlargest(5, 'accuratePasses')
@@ -687,10 +687,10 @@ with tab2:
             st.markdown(df_to_scout_table(gk_df, {'player':'Player','saves':'Saves','cleanSheet':'Clean Sheets','highClaims':'Claims'}), unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 3: HEAD-TO-HEAD DOSSIER
+# TAB 3: PLAYER COMPARISON
 # ═══════════════════════════════════════════════════════════════
 with tab3:
-    st.markdown("<div class='tactical-header'>HEAD-TO-HEAD SCOUTING DOSSIER</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>PLAYER COMPARISON</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         player1 = st.selectbox("ISOLATE TARGET (A):", options=[None] + sorted(player_agg_df['player'].tolist()), key="p1")
