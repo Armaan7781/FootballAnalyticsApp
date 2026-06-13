@@ -586,7 +586,7 @@ with tab2:
     if selected_team_tab2 == "All Teams":
         team_agg = aggregate_team_stats(filtered_df)
 
-        st.markdown("<div class='tactical-header'>MACRO TEAM BENCHMARKS (TOP 5)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='tactical-header'>TEAM BENCHMARKS (TOP 5)</div>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             st.plotly_chart(create_ranked_scouting_bar(team_agg, 'goals', 'team', "TEAM GOALS"), use_container_width=True)
