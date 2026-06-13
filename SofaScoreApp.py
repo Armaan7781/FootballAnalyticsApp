@@ -519,15 +519,15 @@ with tab1:
         top_creators_df = outfield_agg_df.nlargest(5, 'bigChancesCreated')
         max_bcc = max(top_creators_df['bigChancesCreated'].max(), 1)
         max_drb = max(top_creators_df['successfulDribbles'].max(), 1)
-        max_pf3 = max(top_creators_df['passesInFinal3rd'].max() if 'passesInFinal3rd' in top_creators_df.columns else 1, 1)
-        max_pob = max(top_creators_df['passesInOppBox'].max() if 'passesInOppBox' in top_creators_df.columns else 1, 1)
+        max_pf3 = max(top_creators_df['accurateFinalThirdPasses'].max() if 'accurateFinalThirdPasses' in top_creators_df.columns else 1, 1)
+        max_pob = max(top_creators_df['totalOppositionHalfPasses'].max() if 'totalOppositionHalfPasses' in top_creators_df.columns else 1, 1)
         max_foul = max(top_creators_df['wasFouled'].max() if 'wasFouled' in top_creators_df.columns else 1, 1)
         
         fig_pm_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_creators_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            pf3 = p_row['passesInFinal3rd'] if 'passesInFinal3rd' in p_row else 0
-            pob = p_row['passesInOppBox'] if 'passesInOppBox' in p_row else 0
+            pf3 = p_row['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p_row else 0
+            pob = p_row['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p_row else 0
             foul = p_row['wasFouled'] if 'wasFouled' in p_row else 0
             fig_pm_radar.add_trace(go.Scatterpolar(
                 r=[
@@ -818,8 +818,8 @@ with tab3:
                 playmaking_metrics = {
                     'Big Chances Created': (int(p1_data['bigChancesCreated']), int(p2_data['bigChancesCreated'])),
                     'Dribbles (Successful)': (int(p1_data['successfulDribbles']), int(p2_data['successfulDribbles'])),
-                    'Passes in Final 3rd': (int(p1_data['passesInFinal3rd']) if 'passesInFinal3rd' in p1_data else 0, int(p2_data['passesInFinal3rd']) if 'passesInFinal3rd' in p2_data else 0),
-                    'Passes in Opp Box': (int(p1_data['passesInOppBox']) if 'passesInOppBox' in p1_data else 0, int(p2_data['passesInOppBox']) if 'passesInOppBox' in p2_data else 0),
+                    'Passes in Final 3rd': (int(p1_data['accurateFinalThirdPasses']) if 'accurateFinalThirdPasses' in p1_data else 0, int(p2_data['accurateFinalThirdPasses']) if 'accurateFinalThirdPasses' in p2_data else 0),
+                    'Passes in Opp Box': (int(p1_data['totalOppositionHalfPasses']) if 'totalOppositionHalfPasses' in p1_data else 0, int(p2_data['totalOppositionHalfPasses']) if 'totalOppositionHalfPasses' in p2_data else 0),
                     'Times Fouled': (int(p1_data['wasFouled']) if 'wasFouled' in p1_data else 0, int(p2_data['wasFouled']) if 'wasFouled' in p2_data else 0),
                 }
                 playmaking_df = pd.DataFrame({
@@ -834,14 +834,14 @@ with tab3:
                 # UPDATED PLAYMAKING RADAR
                 max_bcc = max(p1_data['bigChancesCreated'], p2_data['bigChancesCreated'], 1)
                 max_drb = max(p1_data['successfulDribbles'], p2_data['successfulDribbles'], 1)
-                max_pf3 = max(p1_data['passesInFinal3rd'] if 'passesInFinal3rd' in p1_data else 0, p2_data['passesInFinal3rd'] if 'passesInFinal3rd' in p2_data else 0, 1)
-                max_pob = max(p1_data['passesInOppBox'] if 'passesInOppBox' in p1_data else 0, p2_data['passesInOppBox'] if 'passesInOppBox' in p2_data else 0, 1)
+                max_pf3 = max(p1_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p1_data else 0, p2_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p2_data else 0, 1)
+                max_pob = max(p1_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p1_data else 0, p2_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p2_data else 0, 1)
                 max_foul = max(p1_data['wasFouled'] if 'wasFouled' in p1_data else 0, p2_data['wasFouled'] if 'wasFouled' in p2_data else 0, 1)
                 
-                p1_pf3 = p1_data['passesInFinal3rd'] if 'passesInFinal3rd' in p1_data else 0
-                p2_pf3 = p2_data['passesInFinal3rd'] if 'passesInFinal3rd' in p2_data else 0
-                p1_pob = p1_data['passesInOppBox'] if 'passesInOppBox' in p1_data else 0
-                p2_pob = p2_data['passesInOppBox'] if 'passesInOppBox' in p2_data else 0
+                p1_pf3 = p1_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p1_data else 0
+                p2_pf3 = p2_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p2_data else 0
+                p1_pob = p1_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p1_data else 0
+                p2_pob = p2_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p2_data else 0
                 p1_foul = p1_data['wasFouled'] if 'wasFouled' in p1_data else 0
                 p2_foul = p2_data['wasFouled'] if 'wasFouled' in p2_data else 0
                 
