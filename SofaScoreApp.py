@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(
     page_title="European Football Analytics Hub",
-    page_icon="⚽",
+    page_icon="🕸️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -656,7 +656,7 @@ with tab1:
             max_cs  = max(top_gk_df['cleanSheet'].max() if len(top_gk_df) else 1, 1)
             max_alb = max(top_gk_df.get('accurateLongBalls', pd.Series([0])).max(), 1)
             max_svc = max(top_gk_df.get('savesCaught', pd.Series([0])).max(), 1)
-            max_pen = max(top_gk_df.get('penaltySaves', pd.Series([0])).max(), 1)
+            max_pen = max(top_gk_df.get('penaltySave', pd.Series([0])).max(), 1)
             
             fig_gk_radar = go.Figure()
             for idx, (_, p_row) in enumerate(top_gk_df.iterrows()):
@@ -665,7 +665,7 @@ with tab1:
                 cs  = p_row.get('cleanSheet', 0)
                 alb = p_row.get('accurateLongBalls', 0)
                 svc = p_row.get('savesCaught', 0)
-                pen = p_row.get('penaltySaves', 0)
+                pen = p_row.get('penaltySave', 0)
                 
                 fig_gk_radar.add_trace(go.Scatterpolar(
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
@@ -783,7 +783,7 @@ with tab2:
             max_cs     = max(top_gk_teams['cleanSheet'].max() if len(top_gk_teams) else 1, 1)
             max_alb_gk = max(top_gk_teams.get('accurateLongBalls', pd.Series([1])).max(), 1)
             max_svc    = max(top_gk_teams.get('savesCaught', pd.Series([1])).max(), 1)
-            max_pen    = max(top_gk_teams.get('penaltySaves', pd.Series([1])).max(), 1)
+            max_pen    = max(top_gk_teams.get('penaltySave', pd.Series([1])).max(), 1)
             
             fig_team_gk = go.Figure()
             for idx, (_, t_row) in enumerate(top_gk_teams.iterrows()):
@@ -792,7 +792,7 @@ with tab2:
                 cs  = t_row.get('cleanSheet', 0)
                 alb = t_row.get('accurateLongBalls', 0)
                 svc = t_row.get('savesCaught', 0)
-                pen = t_row.get('penaltySaves', 0)
+                pen = t_row.get('penaltySave', 0)
                 
                 fig_team_gk.add_trace(go.Scatterpolar(
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb_gk*100), (svc/max_svc*100), (pen/max_pen*100)],
@@ -912,7 +912,7 @@ with tab2:
                 max_cs  = max(top_team_gk['cleanSheet'].max() if len(top_team_gk) else 1, 1)
                 max_alb = max(top_team_gk.get('accurateLongBalls', pd.Series([1])).max(), 1)
                 max_svc = max(top_team_gk.get('savesCaught', pd.Series([1])).max(), 1)
-                max_pen = max(top_team_gk.get('penaltySaves', pd.Series([1])).max(), 1)
+                max_pen = max(top_team_gk.get('penaltySave', pd.Series([1])).max(), 1)
                 
                 fig_team_gk_rad = go.Figure()
                 for idx, (_, p_row) in enumerate(top_team_gk.iterrows()):
@@ -921,7 +921,7 @@ with tab2:
                     cs  = p_row.get('cleanSheet', 0)
                     alb = p_row.get('accurateLongBalls', 0)
                     svc = p_row.get('savesCaught', 0)
-                    pen = p_row.get('penaltySaves', 0)
+                    pen = p_row.get('penaltySave', 0)
                     
                     fig_team_gk_rad.add_trace(go.Scatterpolar(
                         r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
@@ -1128,8 +1128,8 @@ with tab3:
                 p2_alb = p2_data.get('accurateLongBalls', 0)
                 p1_svc = p1_data.get('savesCaught', 0)
                 p2_svc = p2_data.get('savesCaught', 0)
-                p1_pen = p1_data.get('penaltySaves', 0)
-                p2_pen = p2_data.get('penaltySaves', 0)
+                p1_pen = p1_data.get('penaltySave', 0)
+                p2_pen = p2_data.get('penaltySave', 0)
 
                 gk_metrics = {
                     'Saves':               (int(p1_data['saves']),           int(p2_data['saves'])),
