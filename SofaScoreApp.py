@@ -474,17 +474,17 @@ st.markdown("""
         <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #63AEB5; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
             <span>[+] Elite Global Leagues</span>
             <span style="color: #145D6D;">|</span>
-            <span>[+] Player-Centric Scouting</span>
+            <span>[+] League Level Analysis</span>
             <span style="color: #145D6D;">|</span>
             <span style="color: #AFC3D2;">[+] Tactical Radar Profiling</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["PLAYER-CENTRIC SCOUTING", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
+tab1, tab2, tab3 = st.tabs(["League Level Analysis", "CLUB TACTICAL PROFILES", "HEAD-TO-HEAD DOSSIER"])
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 1: PLAYER-CENTRIC SCOUTING
+# TAB 1: League Level Analysis
 # ═══════════════════════════════════════════════════════════════
 with tab1:
     st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
@@ -917,6 +917,6 @@ with tab3:
 st.markdown("""
     <div style='text-align: center; color: var(--text-muted); margin-top: 50px; padding: 20px; font-family: JetBrains Mono, monospace; font-size: 0.75rem; border-top: 1px solid #145D6D;'>
         <span style='color: var(--accent-primary); font-weight: 700; letter-spacing: 2px;'>EUROPEAN FOOTBALL ANALYTICS HUB</span><br>
-        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & MACRO SEASON AUDITING</div>
+        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & SEASON LEVEL ANALYSIS</div>
     </div>
 """, unsafe_allow_html=True)
