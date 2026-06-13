@@ -239,7 +239,7 @@ def aggregate_player_stats(df):
     # Only calculate for players with at least 10 goals
     # ═══════════════════════════════════════════════════════════
     agg_df['goal_conversion'] = np.where(
-        (agg_df['goals'] >= 10),
+        (agg_df['goals'] >= 50),
         np.clip((agg_df['goals'] / agg_df['totalShots']) * 100, 0, 100),
         0
     )
