@@ -727,8 +727,8 @@ with tab3:
         is_p2_gk = p2_data['is_gk']
 
         if not is_p1_gk and not is_p2_gk:
-            # ── OFFENSIVE PRODUCTION ─────────────────────────────
-            st.markdown("<p class='section-label'>// OFFENSIVE PRODUCTION</p>", unsafe_allow_html=True)
+            # ── OFFENSE ─────────────────────────────
+            st.markdown("<p class='section-label'>// OFFENSE</p>", unsafe_allow_html=True)
             attacking_metrics = {
                 'Goals Registered':    (int(p1_data['goals']),           int(p2_data['goals'])),
                 'Assists':             (int(p1_data['assists']),          int(p2_data['assists'])),
