@@ -2,21 +2,26 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from datetime import datetime
+import unicodedata
 import warnings
 
 warnings.filterwarnings('ignore')
 
+# ═══════════════════════════════════════════════════════════════
+# PAGE CONFIG
+# ═══════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="European Football Analytics Hub",
-    page_icon="🕸️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# ═══════════════════════════════════════════════════════════════
+# CSS - TACTICAL SCOUTING PLATFORM
+# ═══════════════════════════════════════════════════════════════
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
         :root {
             --bg-primary: #030B12;
@@ -25,7 +30,7 @@ st.markdown("""
             --bg-card: #0D1C25;
             --bg-card-hover: #132733;
             --accent-primary: #0E7C86;
-            --accent-secondary: #63AEB5;
+            --accent-secondary: #37E6F7;
             --accent-tertiary: #AFC3D2;
             --accent-muted: #145D6D;
             --text-primary: #F5F7FA;
@@ -42,6 +47,7 @@ st.markdown("""
             background-color: transparent !important;
         }
         header[data-testid="stHeader"] { background-color: transparent !important; }
+        
         [data-testid="stSidebar"] {
             background-color: var(--bg-sidebar) !important;
             border-right: 1px solid var(--accent-muted) !important;
@@ -49,6 +55,7 @@ st.markdown("""
         [data-testid="stSidebarHeader"], [data-testid="stSidebarContent"] {
             background-color: var(--bg-sidebar) !important;
         }
+
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Bebas Neue', sans-serif !important;
             letter-spacing: 1.5px;
@@ -57,239 +64,56 @@ st.markdown("""
             text-transform: uppercase;
         }
 
-        /* ════════════════════════════════════════════════════════════
-           PROFESSIONAL FILTER CONTAINER REDESIGN
-           ════════════════════════════════════════════════════════════ */
-
-        .filter-header-container {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 255, 136, 0.03) 100%);
-            border: 1px solid rgba(14, 124, 134, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .filter-title {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #00D9FF;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* ── FILTER CARD GRID ── */
-        .filter-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .filter-card {
-            background: linear-gradient(135deg, #0D1C25 0%, #0a151e 100%);
-            border: 1px solid #145D6D;
-            border-radius: 10px;
-            padding: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .filter-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #00D9FF, #00FF88);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .filter-card:hover {
-            border-color: #0E7C86;
-            background: linear-gradient(135deg, #132733 0%, #0f232d 100%);
-            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .filter-card:hover::before {
-            opacity: 1;
-        }
-
-        .filter-card-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #6C8594;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* ── ENHANCED SELECT STYLING ── */
+        /* ── MINIMAL FILTER STYLING ── */
         div[data-baseweb="select"] > div {
-            background-color: rgba(0, 217, 255, 0.05) !important;
-            border: 1.5px solid #145D6D !important;
-            border-radius: 8px !important;
+            background-color: transparent !important;
+            border: 1px solid var(--accent-muted) !important;
             color: var(--text-primary) !important;
-            font-family: 'Inter', sans-serif !important;
-            transition: all 0.25s ease !important;
-            padding: 8px 12px !important;
+            border-radius: 4px !important;
+            min-height: 38px !important;
         }
-
-        div[data-baseweb="select"] > div:hover {
-            border-color: #00D9FF !important;
-            background-color: rgba(0, 217, 255, 0.08) !important;
-            box-shadow: 0 0 12px rgba(0, 217, 255, 0.2) !important;
-        }
-
-        div[data-baseweb="select"] input {
-            color: var(--text-primary) !important;
-            font-weight: 500 !important;
-        }
-
         div[data-baseweb="popover"] > div {
             background-color: var(--bg-card) !important;
-            border: 1px solid #145D6D !important;
-            border-radius: 8px !important;
+            border: 1px solid var(--accent-muted) !important;
         }
-
         li[role="option"] {
             background-color: transparent !important;
             color: var(--text-primary) !important;
             font-family: 'Inter', sans-serif !important;
         }
-
-        li[role="option"]:hover {
-            background-color: rgba(14, 124, 134, 0.2) !important;
+        li[role="option"]:hover { 
+            background-color: rgba(14, 124, 134, 0.2) !important; 
         }
 
-        /* ── TAG DISPLAY IMPROVEMENTS ── */
+        /* ── SELECTED TAGS FIX ── */
         span[data-baseweb="tag"] {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%) !important;
-            border: 1px solid #00D9FF !important;
-            border-radius: 6px !important;
-            padding: 5px 10px !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 0.8rem !important;
-            font-weight: 500 !important;
-            transition: all 0.2s ease;
+            background-color: var(--accent-primary) !important;
+            border: 1px solid var(--accent-secondary) !important;
+            border-radius: 4px !important;
             margin: 2px !important;
         }
-
-        span[data-baseweb="tag"]:hover {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.3) 0%, rgba(0, 255, 136, 0.15) 100%) !important;
-            border-color: #63AEB5 !important;
-            box-shadow: 0 2px 8px rgba(0, 217, 255, 0.2);
-        }
-
         span[data-baseweb="tag"] span {
-            color: #00D9FF !important;
+            background-color: transparent !important;
+            color: #FFFFFF !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.85rem !important;
         }
-
+        span[data-baseweb="tag"] span::before,
+        span[data-baseweb="tag"] span::after {
+            display: none !important;
+        }
         span[data-baseweb="tag"] svg {
-            fill: #63AEB5 !important;
-            transition: all 0.2s ease;
+            fill: #FFFFFF !important;
         }
 
-        span[data-baseweb="tag"]:hover svg {
-            fill: #FF006E !important;
-        }
-
-        /* ── DIVIDER ── */
-        .filter-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #145D6D, transparent);
-            margin: 20px 0;
-        }
-
-        /* ── DATA SUMMARY ENHANCED ── */
-        .data-summary-enhanced {
-            background: linear-gradient(135deg, #0D1C25 0%, #0a151e 100%);
-            border: 1px solid #145D6D;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .data-summary-title {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #00D9FF;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .data-metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .metric-cell {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(99, 174, 181, 0.04) 100%);
-            border: 1px solid rgba(0, 217, 255, 0.3);
-            border-radius: 8px;
-            padding: 12px;
-            transition: all 0.25s ease;
-        }
-
-        .metric-cell:hover {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(99, 174, 181, 0.08) 100%);
-            border-color: rgba(0, 217, 255, 0.6);
-            transform: translateY(-1px);
-        }
-
-        .metric-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6C8594;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .metric-value {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            line-height: 1;
-        }
-
-        /* ── COLOR VARIANTS FOR METRICS ── */
-        .metric-records .metric-value { color: #00D9FF; }
-        .metric-players .metric-value { color: #00FF88; }
-        .metric-competitions .metric-value { color: #FFB700; }
-        .metric-seasons .metric-value { color: #7E5BEF; }
-
-        /* ── STANDARD STYLES ── */
+        /* ── METRICS & TABS ── */
         [data-testid="stMetric"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
-            border-radius: 6px !important;
+            border-radius: 4px !important;
             padding: 16px;
             box-shadow: none;
             border-left: 3px solid var(--accent-primary);
-            transition: all 0.2s ease;
         }
         [data-testid="stMetricLabel"] {
             color: var(--text-secondary);
@@ -303,8 +127,8 @@ st.markdown("""
             color: var(--text-primary);
             font-family: 'Bebas Neue', sans-serif;
             font-size: 2.5rem;
-            line-height: 1.1;
         }
+        
         [data-testid="stTabs"] button {
             background-color: transparent !important;
             border: none !important;
@@ -315,57 +139,53 @@ st.markdown("""
             letter-spacing: 1px;
             color: var(--text-muted) !important;
             padding: 10px 24px;
-            transition: all 0.2s;
         }
         [data-testid="stTabs"] button[aria-selected="true"] {
             border-bottom: 3px solid var(--accent-primary) !important;
             color: var(--text-primary) !important;
             background-color: rgba(14, 124, 134, 0.1) !important;
         }
+
+        /* ── SCOUTING TABLES ── */
         .scout-table {
             width: 100%;
             border-collapse: collapse;
             font-family: 'Inter', sans-serif;
             font-size: 0.85rem;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #145D6D;
+            border: 1px solid var(--accent-muted);
             margin-bottom: 16px;
+            background-color: var(--bg-card);
         }
         .scout-table thead tr {
-            background: linear-gradient(90deg, #0E7C86 0%, #0a5a62 100%);
+            background-color: #0A151E;
+            border-bottom: 1px solid var(--accent-muted);
         }
         .scout-table thead th {
-            padding: 11px 14px;
+            padding: 10px 14px;
             text-align: left;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #F5F7FA;
+            color: var(--text-secondary);
             border: none;
         }
         .scout-table tbody tr {
-            border-bottom: 1px solid rgba(20, 93, 109, 0.4);
-            transition: background 0.15s ease;
+            border-bottom: 1px solid rgba(20, 93, 109, 0.3);
         }
-        .scout-table tbody tr:last-child { border-bottom: none; }
-        .scout-table tbody tr:nth-child(odd)  { background-color: #0D1C25; }
-        .scout-table tbody tr:nth-child(even) { background-color: #0a1820; }
-        .scout-table tbody tr:hover { background-color: #132733; }
+        .scout-table tbody tr:hover { background-color: var(--bg-card-hover); }
         .scout-table tbody td {
             padding: 10px 14px;
-            color: #F5F7FA;
+            color: var(--text-primary);
             vertical-align: middle;
         }
         .scout-table tbody td:first-child {
             font-weight: 600;
-            color: #63AEB5;
+            color: var(--accent-secondary);
         }
         .scout-table tbody td:not(:first-child) {
             font-family: 'JetBrains Mono', monospace;
-            color: #AFC3D2;
+            color: var(--accent-tertiary);
         }
         .rank-badge {
             display: inline-block;
@@ -374,17 +194,18 @@ st.markdown("""
             text-align: center;
             border-radius: 50%;
             background: rgba(14, 124, 134, 0.25);
-            border: 1px solid #0E7C86;
-            color: #00D9FF;
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-secondary);
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
             font-weight: 700;
-            margin-right: 6px;
+            margin-right: 8px;
         }
+
         .tactical-header {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
-            color: #63AEB5;
+            color: var(--accent-secondary);
             border-bottom: 1px solid var(--accent-muted);
             padding-bottom: 6px;
             margin-bottom: 20px;
@@ -393,34 +214,25 @@ st.markdown("""
             letter-spacing: 3px;
             text-transform: uppercase;
         }
-        hr {
-            border-color: var(--accent-muted);
-            opacity: 0.4;
-            margin: 2.5rem 0;
-        }
+        hr { border-color: var(--accent-muted); opacity: 0.4; margin: 2.5rem 0; }
         .section-label {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
-            color: #F5F7FA;
+            color: var(--text-primary);
             font-size: 0.8rem;
             letter-spacing: 3px;
             text-transform: uppercase;
-            border-bottom: 1px solid #145D6D;
+            border-bottom: 1px solid var(--accent-muted);
             padding-bottom: 5px;
             margin-bottom: 14px;
         }
-        .sub-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: #0E7C86;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .filter-cards-grid {
-                grid-template-columns: 1fr;
-            }
+        .sidebar-title {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--accent-primary);
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+            margin-bottom: 0px;
+            text-transform: uppercase;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -428,46 +240,54 @@ st.markdown("""
 # ═══════════════════════════════════════════════════════════════
 # DATA LAYER
 # ═══════════════════════════════════════════════════════════════
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_and_preprocess_data():
     try:
         url = "https://raw.githubusercontent.com/Armaan7781/FootballAnalyticsApp/main/Historical%20Data.csv"
         df = pd.read_csv(url).fillna(0)
+        
+        # Fast vectorized normalization & Unique ID creation
         df['player'] = df['player'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
         df['player'] = df['player'] + ' (' + df['team'] + ')'
+        
+        # GK Identification
         df['is_gk'] = (df['saves'] > 0) | (df['savesParried'] > 0) | (df['punches'] > 0) | (df['highClaims'] > 0)
         return df
     except Exception as e:
         st.error(f"Error loading data: {e}")
         return pd.DataFrame()
 
+@st.cache_data(show_spinner=False)
 def aggregate_player_stats(df):
+    """Aggregates dynamically filtered dataframe."""
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     agg_dict = {col: 'sum' for col in numeric_cols}
     agg_dict.update({'team': 'first', 'league_name': 'first', 'is_gk': 'max'})
     for col in ['season_year', 'accuratePassesPercentage']:
         agg_dict.pop(col, None)
+        
     agg_df = df.groupby('player').agg(agg_dict).reset_index()
-    matches_played = df.groupby('player').size().reset_index(name='matches_played')
-    agg_df = pd.merge(agg_df, matches_played, on='player', how='left')
-    if len(agg_df) >= 10:
-        top_10_threshold = agg_df['goals'].nlargest(10).iloc[-1]
-    else:
-        top_10_threshold = float('inf')
-    agg_df['goal_conversion'] = np.where(
-        agg_df['totalShots'] > 0,
-        np.where(agg_df['goals'] >= top_10_threshold, np.clip((agg_df['goals'] / agg_df['totalShots']) * 100, 0, 100), 0),
-        0
-    )
+    
+    # ── METRIC CORRECTIONS (Issue 15 & Issue 6) ──
+    # Big Chance Conversion = Goals / (Goals + Big Chances Missed)
+    bc_missed = agg_df.get('bigChancesMissed', 0)
+    bc_total = agg_df['goals'] + bc_missed
+    agg_df['goal_conversion'] = np.where(bc_total > 0, np.clip((agg_df['goals'] / bc_total) * 100, 0, 100), 0)
+    
+    # Pass Accuracy = Accurate / Total
     if 'accuratePasses' in agg_df.columns and 'totalPasses' in agg_df.columns:
         agg_df['accuratePassesPercentage'] = np.where(
             agg_df['totalPasses'] > 0, np.clip((agg_df['accuratePasses'] / agg_df['totalPasses']) * 100, 0, 100), 0
         )
-    elif 'accuratePassesPercentage' in df.columns:
-        pass_acc = df.groupby('player')['accuratePassesPercentage'].mean().reset_index()
-        agg_df = pd.merge(agg_df, pass_acc, on='player', how='left')
+        
+    # GK Metrics Proxy
+    saves = agg_df.get('saves', 0)
+    goals_conceded = agg_df.get('goalsConceded', 0)
+    agg_df['save_pct'] = np.where((saves + goals_conceded) > 0, np.clip((saves / (saves + goals_conceded)) * 100, 0, 100), 0)
+
     return agg_df
 
+@st.cache_data(show_spinner=False)
 def aggregate_team_stats(df):
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     agg_dict = {col: 'sum' for col in numeric_cols}
@@ -483,8 +303,7 @@ def hex_to_rgba(hex_color, opacity):
     return f'rgba({r}, {g}, {b}, {opacity})'
 
 def df_to_scout_table(df, col_rename=None):
-    if col_rename:
-        df = df.rename(columns=col_rename)
+    if col_rename: df = df.rename(columns=col_rename)
     cols = df.columns.tolist()
     header = "".join(f"<th>{c}</th>" for c in cols)
     rows_html = ""
@@ -521,7 +340,7 @@ def df_to_plain_table(df):
 # ═══════════════════════════════════════════════════════════════
 # CHART FACTORIES
 # ═══════════════════════════════════════════════════════════════
-RADAR_COLORS = ['#00D9FF', '#00FF88', '#FF006E', '#FFB700', '#7E5BEF']
+RADAR_COLORS = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
 
 def apply_sofascore_radar_layout(fig, title):
     fig.update_layout(
@@ -529,41 +348,33 @@ def apply_sofascore_radar_layout(fig, title):
             bgcolor="#041018",
             radialaxis=dict(
                 visible=True, range=[0, 100],
-                gridcolor="rgba(255,255,255,0.08)",
-                linecolor="rgba(255,255,255,0.08)",
-                tickfont=dict(color="#ffffff", family="JetBrains Mono", size=10)
+                gridcolor="rgba(255,255,255,0.08)", linecolor="rgba(255,255,255,0.08)",
+                tickfont=dict(color="#6C8594", family="JetBrains Mono", size=9)
             ),
             angularaxis=dict(
-                gridcolor="rgba(255,255,255,0.08)",
-                linecolor="rgba(255,255,255,0.08)",
-                tickfont=dict(family="Inter", size=11, color="#A7BAC6", weight="bold")
+                gridcolor="rgba(255,255,255,0.08)", linecolor="rgba(255,255,255,0.08)",
+                tickfont=dict(family="Inter", size=11, color="#F5F7FA", weight="bold")
             )
         ),
-        paper_bgcolor="#030B12",
-        plot_bgcolor="#030B12",
-        font=dict(color="#F5F7FA"),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         title=dict(
-            text=title,
-            font=dict(family="Inter", size=13, color="#63AEB5", weight="bold"),
-            y=0.97, x=0.04, xanchor='left', yanchor='top'
+            text=title, font=dict(family="Inter", size=16, color="#F5F7FA", weight="bold"),
+            y=0.96, x=0.04, xanchor='left', yanchor='top'
         ),
         height=450,
-        legend=dict(
-            orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1,
-            font=dict(family="Inter", size=11, color="#A7BAC6")
-        ),
+        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1, font=dict(family="Inter", size=11, color="#A7BAC6")),
         margin=dict(l=60, r=160, t=60, b=60)
     )
     return fig
 
 def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
-    gradient_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
     sorted_df = df_subset.nlargest(5, value_col)
     metrics = sorted_df[label_col].tolist()
     values = sorted_df[value_col].tolist()
     metrics_rev = list(reversed(metrics))
     values_rev = list(reversed(values))
-    bar_colors = [gradient_palette[len(metrics_rev) - 1 - i] for i in range(len(metrics_rev))]
+    bar_colors = [RADAR_COLORS[len(metrics_rev) - 1 - i] for i in range(len(metrics_rev))]
+    
     fig = go.Figure(data=[
         go.Bar(
             y=metrics_rev, x=values_rev, orientation='h',
@@ -576,22 +387,17 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     ])
     fig.update_layout(
         title=dict(
-            text=title,
-            font=dict(family="Inter", size=13, color="#63AEB5", weight="bold"),
+            text=title, font=dict(family="Inter", size=16, color="#F5F7FA", weight="bold"),
             y=0.96, x=0.0, xanchor='left', yanchor='top'
         ),
         xaxis=dict(
-            title=dict(text="METRIC OUTPUT", font=dict(family="JetBrains Mono", size=10, color="#6C8594")),
+            title=dict(text="OUTPUT", font=dict(family="JetBrains Mono", size=10, color="#6C8594")),
             tickfont=dict(family="JetBrains Mono", color="#6C8594", size=10),
             gridcolor="#145D6D", gridwidth=0.5, zeroline=False
         ),
         yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight="bold")),
-        paper_bgcolor="#0D1C25",
-        plot_bgcolor="#0D1C25",
-        font=dict(color="#F5F7FA"),
-        height=320,
-        showlegend=False,
-        margin=dict(l=150, r=20, t=60, b=40)
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        height=320, showlegend=False, margin=dict(l=150, r=20, t=60, b=40)
     )
     return fig
 
@@ -607,177 +413,153 @@ all_leagues = sorted(raw_df['league_name'].unique().tolist())
 all_seasons = sorted(raw_df['season_year'].unique().tolist())
 all_teams   = sorted(raw_df['team'].unique().tolist())
 
-# ═══════════════════════════════════════════════════════════════
-# NEWLY REDESIGNED FILTER SECTION
-# ═══════════════════════════════════════════════════════════════
-st.sidebar.markdown("""
-    <div class="filter-header-container">
-        <div class="filter-title">
-            <span>⚙️</span> INTELLIGENCE FILTERS
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+# Defaults logic
+default_top_5 = [l for l in all_leagues if any(x in l for x in ['Premier League', 'LaLiga', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1'])]
+if len(default_top_5) == 0: default_top_5 = all_leagues[:5]
 
-col1, col2, col3 = st.sidebar.columns(3)
+st.sidebar.markdown("<h2 class='sidebar-title'>TACTICAL FILTERS</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='margin: 10px 0; border-color: #145D6D;'>", unsafe_allow_html=True)
 
-with col1:
-    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>🏆</span> COMPETITION</div></div>""", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='font-family:Inter; font-size:12px; font-weight:600; color:#6C8594; margin-bottom:5px;'>COMPETITION</p>", unsafe_allow_html=True)
+selected_leagues = st.sidebar.multiselect("COMPETITION", options=all_leagues, default=default_top_5, key="leagues_filter", label_visibility="collapsed")
 
-with col2:
-    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>📅</span> SEASON</div></div>""", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='font-family:Inter; font-size:12px; font-weight:600; color:#6C8594; margin-bottom:5px; margin-top:10px;'>SEASON</p>", unsafe_allow_html=True)
+selected_seasons = st.sidebar.multiselect("SEASON", options=all_seasons, default=[all_seasons[-1]], key="seasons_filter", label_visibility="collapsed")
 
-with col3:
-    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>🏢</span> CLUB ROSTER</div></div>""", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='font-family:Inter; font-size:12px; font-weight:600; color:#6C8594; margin-bottom:5px; margin-top:10px;'>TEAM</p>", unsafe_allow_html=True)
+selected_teams   = st.sidebar.multiselect("TEAM", options=all_teams, default=None, key="teams_filter", label_visibility="collapsed")
 
-st.sidebar.markdown("""""", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='margin: 20px 0; border-color: #145D6D;'>", unsafe_allow_html=True)
 
-selected_leagues = st.sidebar.multiselect("", options=all_leagues, default=all_leagues, key="leagues_filter", label_visibility="collapsed")
-selected_seasons = st.sidebar.multiselect("", options=all_seasons, default=[all_seasons[-1]], key="seasons_filter", label_visibility="collapsed")
-selected_teams   = st.sidebar.multiselect("", options=all_teams, default=None, key="teams_filter", label_visibility="collapsed")
-
-st.sidebar.markdown("""<div class="filter-divider"></div>""", unsafe_allow_html=True)
-
+# ── FILTERING & SAFE EXECUTION ──
 filtered_df = raw_df[(raw_df['league_name'].isin(selected_leagues)) & (raw_df['season_year'].isin(selected_seasons))]
 if selected_teams:
     filtered_df = filtered_df[filtered_df['team'].isin(selected_teams)]
+
 if filtered_df.empty:
-    st.warning("NO DATA AVAILABLE FOR SELECTED SCOUTING PARAMETERS. ADJUST FILTERS TO CONTINUE.")
+    st.warning("NO DATA AVAILABLE FOR CURRENT FILTER COMBINATION.")
     st.stop()
 
+# ── AGGREGATION ──
 player_agg_df   = aggregate_player_stats(filtered_df)
 gk_agg_df       = player_agg_df[player_agg_df['is_gk'] == 1]
 outfield_agg_df = player_agg_df[player_agg_df['is_gk'] == 0]
 
 st.sidebar.markdown(f"""
-    <div class="data-summary-enhanced">
-        <div class="data-summary-title">📊 DATA VOLUME</div>
-        <div class="data-metrics-grid">
-            <div class="metric-cell metric-records">
-                <span class="metric-label">📋 Records</span>
-                <span class="metric-value">{len(filtered_df)}</span>
-            </div>
-            <div class="metric-cell metric-players">
-                <span class="metric-label">👥 Players</span>
-                <span class="metric-value">{len(player_agg_df)}</span>
-            </div>
-            <div class="metric-cell metric-competitions">
-                <span class="metric-label">⚡ Competitions</span>
-                <span class="metric-value">{len(selected_leagues)}</span>
-            </div>
-            <div class="metric-cell metric-seasons">
-                <span class="metric-label">🗓️ Seasons</span>
-                <span class="metric-value">{len(selected_seasons)}</span>
-            </div>
+    <div style='background-color: var(--bg-card); padding: 16px; border: 1px solid var(--accent-muted); border-left: 4px solid var(--accent-primary); font-family: Inter, sans-serif;'>
+        <div style='font-family: Bebas Neue; color: var(--accent-primary); font-size: 1.2rem; letter-spacing: 1px; margin-bottom: 12px;'>DATA VOLUME</div>
+        <div style='display: flex; justify-content: space-between; margin-bottom: 8px;'>
+            <span style='color: var(--text-secondary); font-size: 0.8rem; font-family: JetBrains Mono;'>Records:</span>
+            <span style='color: var(--text-primary); font-family: JetBrains Mono; font-weight: 700;'>{len(filtered_df)}</span>
+        </div>
+        <div style='display: flex; justify-content: space-between;'>
+            <span style='color: var(--text-secondary); font-size: 0.8rem; font-family: JetBrains Mono;'>Players:</span>
+            <span style='color: var(--accent-secondary); font-family: JetBrains Mono; font-weight: 700;'>{len(player_agg_df)}</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
-# HERO BANNER
+# MAIN HUB
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
-    <div style="background-color: #030B12; padding: 40px 30px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 40px; border-radius: 4px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.5 FILTER REDESIGN</div>
-        <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 4rem; font-weight: 400; letter-spacing: 3px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
-        <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #63AEB5; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
-            <span>[+] Elite Global Leagues</span>
-            <span style="color: #145D6D;">|</span>
-            <span>[+] League Level Analysis</span>
-            <span style="color: #145D6D;">|</span>
-            <span style="color: #AFC3D2;">[+] Tactical Radar Profiling</span>
-        </div>
+    <div style="background-color: #030B12; padding: 30px 25px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 30px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE</div>
+        <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; letter-spacing: 2px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
     </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["LEAGUE LEVEL ANALYSIS", "CLUB TACTICAL PROFILES", "PLAYER COMPARION"])
+tab1, tab2, tab3 = st.tabs(["LEAGUE ANALYSIS", "TEAM PROFILES", "PLAYER COMPARISON"])
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 1: League Level Analysis
+# TAB 1: LEAGUE ANALYSIS
 # ═══════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown("<div class='tactical-header'>ATTACKING WINDOW — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goals', 'player', "GOALS REGISTERED"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "SHOT VOLUME"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goals', 'player', "Goals Registered"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "Shot Volume"), use_container_width=True)
     with col2:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "EXPECTED GOALS (xG)"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "GOAL CONVERSION %"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "Expected Goals (xG)"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Big Chance Conversion %"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("<div class='tactical-header'>PLAYMAKING & CREATIVITY — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>PLAYMAKING & CREATIVITY</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'keyPasses', 'player', "KEY PASSES VOLUME"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'bigChancesCreated', 'player', "BIG CHANCES CREATED"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'successfulDribbles', 'player', "SUCCESSFUL TAKE-ONS"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'keyPasses', 'player', "Key Passes"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'bigChancesCreated', 'player', "Big Chances Created"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'successfulDribbles', 'player', "Successful Dribbles"), use_container_width=True)
     with col2:
         top_creators_df = outfield_agg_df.nlargest(5, 'bigChancesCreated')
-        max_bcc  = max(top_creators_df['bigChancesCreated'].max(), 1)
-        max_drb  = max(top_creators_df['successfulDribbles'].max(), 1)
-        max_pf3  = max(top_creators_df['accurateFinalThirdPasses'].max() if 'accurateFinalThirdPasses' in top_creators_df.columns else 1, 1)
-        max_pob  = max(top_creators_df['totalOppositionHalfPasses'].max() if 'totalOppositionHalfPasses' in top_creators_df.columns else 1, 1)
-        max_foul = max(top_creators_df['wasFouled'].max() if 'wasFouled' in top_creators_df.columns else 1, 1)
+        max_bcc  = max(top_creators_df['bigChancesCreated'].max() if len(top_creators_df) else 1, 1)
+        max_drb  = max(top_creators_df['successfulDribbles'].max() if len(top_creators_df) else 1, 1)
+        max_pf3  = max(top_creators_df.get('accurateFinalThirdPasses', pd.Series([1])).max(), 1)
+        max_pob  = max(top_creators_df.get('totalOppositionHalfPasses', pd.Series([1])).max(), 1)
+        max_foul = max(top_creators_df.get('wasFouled', pd.Series([1])).max(), 1)
+        
         fig_pm_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_creators_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            pf3  = p_row['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p_row else 0
-            pob  = p_row['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p_row else 0
-            foul = p_row['wasFouled'] if 'wasFouled' in p_row else 0
+            pf3  = p_row.get('accurateFinalThirdPasses', 0)
+            pob  = p_row.get('totalOppositionHalfPasses', 0)
+            foul = p_row.get('wasFouled', 0)
             fig_pm_radar.add_trace(go.Scatterpolar(
                 r=[(p_row['bigChancesCreated']/max_bcc*100), (p_row['successfulDribbles']/max_drb*100),
                    (pf3/max_pf3*100), (pob/max_pob*100), (foul/max_foul*100)],
                 theta=['Big Chances', 'Dribbles', 'Passes Final 3rd', 'Passes Opp Box', 'Was Fouled'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.2)
+                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.15)
             ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "PLAYMAKING MATRIX"), use_container_width=True)
+        st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "Creative Index Matrix"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("<div class='tactical-header'>POSSESSION & RETENTION — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>POSSESSION</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'accuratePasses', 'player', "COMPLETED PASSES"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'touches', 'player', "TOTAL TOUCHES"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'accuratePasses', 'player', "Passes Completed"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'touches', 'player', "Touches"), use_container_width=True)
     with col2:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'accuratePassesPercentage', 'player', "PASS COMPLETION ACCURACY %"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'accuratePassesPercentage', 'player', "Pass Accuracy %"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("<div class='tactical-header'>DEFENDING & TACTICAL GRIT — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>DEFENSIVE ACTIONS</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'tackles', 'player', "TACKLES WON"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'interceptions', 'player', "INTERCEPTIONS"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'aerialDuelsWon', 'player', "AERIAL DUELS WON"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'tackles', 'player', "Tackles"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'interceptions', 'player', "Interceptions"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'clearances', 'player', "Clearances"), use_container_width=True)
     with col2:
         top_defenders_df = outfield_agg_df.nlargest(5, 'tackles')
-        max_tck = max(top_defenders_df['tackles'].max(), 1)
-        max_int = max(top_defenders_df['interceptions'].max(), 1)
-        max_aer = max(top_defenders_df['aerialDuelsWon'].max(), 1)
-        max_grd = max(top_defenders_df['groundDuelsWon'].max(), 1)
-        max_rec = max(top_defenders_df['ballRecovery'].max() if 'ballRecovery' in top_defenders_df.columns else 1, 1)
+        max_tck = max(top_defenders_df['tackles'].max() if len(top_defenders_df) else 1, 1)
+        max_int = max(top_defenders_df['interceptions'].max() if len(top_defenders_df) else 1, 1)
+        max_clr = max(top_defenders_df['clearances'].max() if len(top_defenders_df) else 1, 1)
+        max_aer = max(top_defenders_df['aerialDuelsWon'].max() if len(top_defenders_df) else 1, 1)
+        max_rec = max(top_defenders_df.get('ballRecovery', pd.Series([1])).max(), 1)
+        
         fig_def_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_defenders_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            rec = p_row['ballRecovery'] if 'ballRecovery' in p_row else 0
+            rec = p_row.get('ballRecovery', 0)
             fig_def_radar.add_trace(go.Scatterpolar(
                 r=[(p_row['tackles']/max_tck*100), (p_row['interceptions']/max_int*100),
-                   (p_row['aerialDuelsWon']/max_aer*100), (p_row['groundDuelsWon']/max_grd*100), (rec/max_rec*100)],
-                theta=['Tackles Won', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Ball Recovery'],
+                   (p_row['clearances']/max_clr*100), (p_row['aerialDuelsWon']/max_aer*100), (rec/max_rec*100)],
+                theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.2)
+                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.15)
             ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_def_radar, "DEFENSIVE EFFICIENCY MATRIX"), use_container_width=True)
+        st.plotly_chart(apply_sofascore_radar_layout(fig_def_radar, "Defensive Efficiency Matrix"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("<div class='tactical-header'>GOALKEEPING SECURITY — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>GOALKEEPING</div>", unsafe_allow_html=True)
     if len(gk_agg_df) > 0:
         col1, col2 = st.columns(2)
         with col1:
-            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'saves', 'player', "SAVES EXECUTED"), use_container_width=True)
-            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'cleanSheet', 'player', "CLEAN SHEETS"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'saves', 'player', "Saves"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'cleanSheet', 'player', "Clean Sheets"), use_container_width=True)
         with col2:
-            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'highClaims', 'player', "HIGH CLAIMS"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(gk_agg_df, 'highClaims', 'player', "High Claims"), use_container_width=True)
     else:
         st.info("NO ACTIVE GOALKEEPER DATA IN THIS FILTER RANGE.")
 
@@ -794,76 +576,59 @@ with tab2:
     if selected_team_tab2 == "All Teams":
         team_agg = aggregate_team_stats(filtered_df)
 
-        st.markdown("<div class='tactical-header'>TEAM BENCHMARKS (TOP 5)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='tactical-header'>TEAM BENCHMARKS</div>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'goals', 'team', "TEAM GOALS"), use_container_width=True)
-            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'totalShots', 'team', "TEAM SHOTS"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'goals', 'team', "Team Goals"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'totalShots', 'team', "Team Shots"), use_container_width=True)
         with col2:
-            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'expectedGoals', 'team', "TEAM xG"), use_container_width=True)
-            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'bigChancesCreated', 'team', "TEAM BIG CHANCES CREATED"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'expectedGoals', 'team', "Team xG"), use_container_width=True)
+            st.plotly_chart(create_ranked_scouting_bar(team_agg, 'bigChancesCreated', 'team', "Team Big Chances Created"), use_container_width=True)
 
         st.markdown("---")
-        st.markdown("<div class='tactical-header'>TEAM PERFORMANCE - RADAR (TOP 5 TEAMS BY METRIC)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='tactical-header'>TEAM PERFORMANCE RADARS</div>", unsafe_allow_html=True)
 
-        # ── PASSING RADAR ──────────────────────────────────────
+        # ── PASSING RADAR ──
         top_passing_teams = team_agg.nlargest(5, 'accuratePasses')
-        max_ap    = max(top_passing_teams['accuratePasses'].max(), 1)
-        max_t     = max(top_passing_teams['touches'].max(), 1)
-        max_alb   = max(top_passing_teams['accurateLongBalls'].max() if 'accurateLongBalls' in top_passing_teams.columns else 1, 1)
-        max_bcc_t = max(top_passing_teams['bigChancesCreated'].max(), 1)
-        max_kp_t  = max(top_passing_teams['keyPasses'].max(), 1)
+        max_ap    = max(top_passing_teams['accuratePasses'].max() if len(top_passing_teams) else 1, 1)
+        max_t     = max(top_passing_teams['touches'].max() if len(top_passing_teams) else 1, 1)
+        max_alb   = max(top_passing_teams.get('accurateLongBalls', pd.Series([1])).max(), 1)
+        max_bcc_t = max(top_passing_teams['bigChancesCreated'].max() if len(top_passing_teams) else 1, 1)
+        max_kp_t  = max(top_passing_teams['keyPasses'].max() if len(top_passing_teams) else 1, 1)
+        
         fig_team_pass = go.Figure()
         for idx, (_, t_row) in enumerate(top_passing_teams.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            alb = t_row['accurateLongBalls'] if 'accurateLongBalls' in t_row else 0
+            alb = t_row.get('accurateLongBalls', 0)
             fig_team_pass.add_trace(go.Scatterpolar(
                 r=[(t_row['accuratePasses']/max_ap*100), (t_row['touches']/max_t*100),
                    (alb/max_alb*100), (t_row['bigChancesCreated']/max_bcc_t*100), (t_row['keyPasses']/max_kp_t*100)],
                 theta=['Accurate Passes', 'Touches', 'Long Balls', 'BCC', 'Key Passes'],
                 fill='toself', name=t_row['team'],
-                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.2)
+                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.15)
             ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "PASSING TEAMS MATRIX"), use_container_width=True)
+        st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "Top Passing Teams"), use_container_width=True)
 
-        # ── DEFENSIVE RADAR ────────────────────────────────────
+        # ── DEFENSIVE RADAR ──
         top_def_teams = team_agg.nlargest(5, 'tackles')
-        max_tck_t = max(top_def_teams['tackles'].max(), 1)
-        max_int_t = max(top_def_teams['interceptions'].max(), 1)
-        max_aer_t = max(top_def_teams['aerialDuelsWon'].max(), 1)
-        max_grd_t = max(top_def_teams['groundDuelsWon'].max(), 1)
-        max_rec_t = max(top_def_teams['ballRecovery'].max() if 'ballRecovery' in top_def_teams.columns else 1, 1)
+        max_tck_t = max(top_def_teams['tackles'].max() if len(top_def_teams) else 1, 1)
+        max_int_t = max(top_def_teams['interceptions'].max() if len(top_def_teams) else 1, 1)
+        max_aer_t = max(top_def_teams['aerialDuelsWon'].max() if len(top_def_teams) else 1, 1)
+        max_grd_t = max(top_def_teams['groundDuelsWon'].max() if len(top_def_teams) else 1, 1)
+        max_rec_t = max(top_def_teams.get('ballRecovery', pd.Series([1])).max(), 1)
+        
         fig_team_def = go.Figure()
         for idx, (_, t_row) in enumerate(top_def_teams.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            rec = t_row['ballRecovery'] if 'ballRecovery' in t_row else 0
+            rec = t_row.get('ballRecovery', 0)
             fig_team_def.add_trace(go.Scatterpolar(
                 r=[(t_row['tackles']/max_tck_t*100), (t_row['interceptions']/max_int_t*100),
                    (t_row['aerialDuelsWon']/max_aer_t*100), (t_row['groundDuelsWon']/max_grd_t*100), (rec/max_rec_t*100)],
-                theta=['Tackles Won', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Ball Recovery'],
+                theta=['Tackles', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Ball Recovery'],
                 fill='toself', name=t_row['team'],
-                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.2)
+                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.15)
             ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "DEFENSIVE TEAMS MATRIX"), use_container_width=True)
-
-        # ── GK RADAR ──────────────────────────────────────────
-        top_gk_teams = team_agg.nlargest(5, 'saves')
-        max_sv     = max(top_gk_teams['saves'].max(), 1)
-        max_cs     = max(top_gk_teams['cleanSheet'].max(), 1)
-        max_alb_gk = max(top_gk_teams['accurateLongBalls'].max() if 'accurateLongBalls' in top_gk_teams.columns else 1, 1)
-        max_err    = max(top_gk_teams['errorLeadToGoal'].max(), 1)
-        fig_team_gk = go.Figure()
-        for idx, (_, t_row) in enumerate(top_gk_teams.iterrows()):
-            color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            alb_gk = t_row['accurateLongBalls'] if 'accurateLongBalls' in t_row else 0
-            fig_team_gk.add_trace(go.Scatterpolar(
-                r=[(t_row['saves']/max_sv*100), (t_row['cleanSheet']/max_cs*100),
-                   (alb_gk/max_alb_gk*100), ((max_err - t_row['errorLeadToGoal'])/max_err*100)],
-                theta=['Saves', 'Clean Sheets', 'Long Balls', 'Error Avoidance'],
-                fill='toself', name=t_row['team'],
-                line=dict(color=color, width=3), fillcolor=hex_to_rgba(color, 0.2)
-            ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk, "GOALKEEPER TEAMS MATRIX"), use_container_width=True)
+        st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "Top Defensive Teams"), use_container_width=True)
 
     else:
         team_df       = player_agg_df[player_agg_df['team'] == selected_team_tab2]
@@ -872,27 +637,27 @@ with tab2:
 
         st.markdown(f"<div class='tactical-header'>[{selected_team_tab2}] TEAM SCOUTING REPORT</div>", unsafe_allow_html=True)
 
-        st.markdown("<p class='sub-label'>ATTACK — TOP 5 PLAYERS</p>", unsafe_allow_html=True)
+        st.markdown("<p class='section-label'>ATTACK</p>", unsafe_allow_html=True)
         att_df = team_outfield.nlargest(5, 'goals')[['player', 'goals', 'expectedGoals', 'totalShots']].copy()
         st.markdown(df_to_scout_table(att_df, {'player':'Player','goals':'Goals','expectedGoals':'xG','totalShots':'Shots'}), unsafe_allow_html=True)
 
-        st.markdown("<p class='sub-label' style='margin-top:20px;'>CREATION — TOP 5 PLAYERS</p>", unsafe_allow_html=True)
+        st.markdown("<p class='section-label' style='margin-top:20px;'>CREATION</p>", unsafe_allow_html=True)
         pm_df = team_outfield.nlargest(5, 'bigChancesCreated')[['player', 'keyPasses', 'bigChancesCreated', 'successfulDribbles']].copy()
         st.markdown(df_to_scout_table(pm_df, {'player':'Player','keyPasses':'Key Passes','bigChancesCreated':'BCC','successfulDribbles':'Dribbles'}), unsafe_allow_html=True)
 
-        st.markdown("<p class='sub-label' style='margin-top:20px;'>POSSESSION — TOP 5 PLAYERS</p>", unsafe_allow_html=True)
+        st.markdown("<p class='section-label' style='margin-top:20px;'>POSSESSION</p>", unsafe_allow_html=True)
         pos_df = team_outfield.nlargest(5, 'accuratePasses')[['player', 'accuratePasses', 'touches', 'accuratePassesPercentage']].copy()
         pos_df['accuratePassesPercentage'] = pos_df['accuratePassesPercentage'].round(1)
-        st.markdown(df_to_scout_table(pos_df, {'player':'Player','accuratePasses':'Passes Completed','touches':'Touches','accuratePassesPercentage':'Pass Acc %'}), unsafe_allow_html=True)
+        st.markdown(df_to_scout_table(pos_df, {'player':'Player','accuratePasses':'Passes','touches':'Touches','accuratePassesPercentage':'Pass Acc %'}), unsafe_allow_html=True)
 
-        st.markdown("<p class='sub-label' style='margin-top:20px;'>DEFENCE — TOP 5 PLAYERS</p>", unsafe_allow_html=True)
-        def_df = team_outfield.nlargest(5, 'tackles')[['player', 'tackles', 'interceptions', 'aerialDuelsWon']].copy()
-        st.markdown(df_to_scout_table(def_df, {'player':'Player','tackles':'Tackles','interceptions':'Interceptions','aerialDuelsWon':'Aerial Duels'}), unsafe_allow_html=True)
+        st.markdown("<p class='section-label' style='margin-top:20px;'>DEFENCE</p>", unsafe_allow_html=True)
+        def_df = team_outfield.nlargest(5, 'tackles')[['player', 'tackles', 'interceptions', 'clearances']].copy()
+        st.markdown(df_to_scout_table(def_df, {'player':'Player','tackles':'Tackles','interceptions':'Interceptions','clearances':'Clearances'}), unsafe_allow_html=True)
 
         if len(team_gk) > 0:
-            st.markdown("<p class='sub-label' style='margin-top:20px;'>GOALKEEPING</p>", unsafe_allow_html=True)
-            gk_df = team_gk.nlargest(5, 'saves')[['player', 'saves', 'cleanSheet', 'highClaims']].copy()
-            st.markdown(df_to_scout_table(gk_df, {'player':'Player','saves':'Saves','cleanSheet':'Clean Sheets','highClaims':'Claims'}), unsafe_allow_html=True)
+            st.markdown("<p class='section-label' style='margin-top:20px;'>GOALKEEPING</p>", unsafe_allow_html=True)
+            gk_df = team_gk.nlargest(5, 'saves')[['player', 'saves', 'cleanSheet']].copy()
+            st.markdown(df_to_scout_table(gk_df, {'player':'Player','saves':'Saves','cleanSheet':'Clean Sheets'}), unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
 # TAB 3: PLAYER COMPARISON
@@ -915,8 +680,8 @@ with tab3:
         with col1:
             p1_type = "GOALKEEPER" if p1_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00D9FF; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #00D9FF; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #0E7C86; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #0E7C86; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player1}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p1_data['team']} | {p1_data['league_name']}</div>
                 </div>
@@ -924,8 +689,8 @@ with tab3:
         with col2:
             p2_type = "GOALKEEPER" if p2_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00FF88; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #00FF88; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #AFC3D2; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #AFC3D2; font-family: JetBrains Mono; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player2}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} | {p2_data['league_name']}</div>
                 </div>
@@ -935,38 +700,38 @@ with tab3:
         is_p2_gk = p2_data['is_gk']
 
         if not is_p1_gk and not is_p2_gk:
-            st.markdown("<p class='section-label'>// OFFENSE</p>", unsafe_allow_html=True)
+            # ── OFFENSE ─────────────────────────────
+            st.markdown("<p class='section-label'>OFFENSE</p>", unsafe_allow_html=True)
             attacking_metrics = {
                 'Goals Registered':    (int(p1_data['goals']),           int(p2_data['goals'])),
-                'Assists':             (int(p1_data['assists']),          int(p2_data['assists'])),
+                'Assists':             (int(p1_data['assists']),           int(p2_data['assists'])),
                 'Shot Volume':         (int(p1_data['totalShots']),       int(p2_data['totalShots'])),
                 'Shots on Target':     (int(p1_data['shotsOnTarget']),    int(p2_data['shotsOnTarget'])),
                 'BCC (Big Chances)':   (int(p1_data['bigChancesCreated']),int(p2_data['bigChancesCreated'])),
                 'Expected Goals (xG)': (float(p1_data['expectedGoals']),  float(p2_data['expectedGoals'])),
             }
-            att_cmp_df = pd.DataFrame({'Performance Metric': list(attacking_metrics.keys()),
+            att_cmp_df = pd.DataFrame({'Metric': list(attacking_metrics.keys()),
                                        player1: [v[0] for v in attacking_metrics.values()],
                                        player2: [v[1] for v in attacking_metrics.values()]})
             st.markdown(df_to_plain_table(att_cmp_df), unsafe_allow_html=True)
             st.markdown("---")
 
-            st.markdown("<p class='section-label'>// PLAYMAKING AUDIT</p>", unsafe_allow_html=True)
+            # ── PLAYMAKING ─────────────────────────────────
+            st.markdown("<p class='section-label'>PLAYMAKING</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                p1_pf3  = p1_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p1_data else 0
-                p2_pf3  = p2_data['accurateFinalThirdPasses'] if 'accurateFinalThirdPasses' in p2_data else 0
-                p1_pob  = p1_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p1_data else 0
-                p2_pob  = p2_data['totalOppositionHalfPasses'] if 'totalOppositionHalfPasses' in p2_data else 0
-                p1_foul = p1_data['wasFouled'] if 'wasFouled' in p1_data else 0
-                p2_foul = p2_data['wasFouled'] if 'wasFouled' in p2_data else 0
+                p1_pf3  = p1_data.get('accurateFinalThirdPasses', 0)
+                p2_pf3  = p2_data.get('accurateFinalThirdPasses', 0)
+                p1_pob  = p1_data.get('totalOppositionHalfPasses', 0)
+                p2_pob  = p2_data.get('totalOppositionHalfPasses', 0)
+                
                 playmaking_metrics = {
                     'Big Chances Created':   (int(p1_data['bigChancesCreated']), int(p2_data['bigChancesCreated'])),
                     'Dribbles (Successful)': (int(p1_data['successfulDribbles']),int(p2_data['successfulDribbles'])),
                     'Passes in Final 3rd':   (int(p1_pf3), int(p2_pf3)),
-                    'Passes in Opp Box':     (int(p1_pob), int(p2_pob)),
-                    'Times Fouled':          (int(p1_foul),int(p2_foul)),
+                    'Passes in Opp Box':     (int(p1_pob), int(p2_pob))
                 }
-                pm_cmp_df = pd.DataFrame({'Playmaking Metric': list(playmaking_metrics.keys()),
+                pm_cmp_df = pd.DataFrame({'Metric': list(playmaking_metrics.keys()),
                                           player1: [v[0] for v in playmaking_metrics.values()],
                                           player2: [v[1] for v in playmaking_metrics.values()]})
                 st.markdown(df_to_plain_table(pm_cmp_df), unsafe_allow_html=True)
@@ -975,37 +740,38 @@ with tab3:
                 max_drb  = max(p1_data['successfulDribbles'], p2_data['successfulDribbles'],  1)
                 max_pf3  = max(p1_pf3, p2_pf3, 1)
                 max_pob  = max(p1_pob, p2_pob, 1)
-                max_foul = max(p1_foul, p2_foul, 1)
+                
                 fig_playmaking = go.Figure()
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[(p1_data['bigChancesCreated']/max_bcc*100), (p1_data['successfulDribbles']/max_drb*100),
-                       (p1_pf3/max_pf3*100), (p1_pob/max_pob*100), (p1_foul/max_foul*100)],
-                    theta=['Big Chances','Dribbles','Final 3rd Passes','Opp Box Passes','Was Fouled'],
+                       (p1_pf3/max_pf3*100), (p1_pob/max_pob*100)],
+                    theta=['Big Chances','Dribbles','Final 3rd Passes','Opp Box Passes'],
                     fill='toself', name=player1,
-                    line=dict(color='#00D9FF', width=3), fillcolor=hex_to_rgba('#00D9FF', 0.2)
+                    line=dict(color='#0E7C86', width=3), fillcolor=hex_to_rgba('#0E7C86', 0.2)
                 ))
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[(p2_data['bigChancesCreated']/max_bcc*100), (p2_data['successfulDribbles']/max_drb*100),
-                       (p2_pf3/max_pf3*100), (p2_pob/max_pob*100), (p2_foul/max_foul*100)],
-                    theta=['Big Chances','Dribbles','Final 3rd Passes','Opp Box Passes','Was Fouled'],
+                       (p2_pf3/max_pf3*100), (p2_pob/max_pob*100)],
+                    theta=['Big Chances','Dribbles','Final 3rd Passes','Opp Box Passes'],
                     fill='toself', name=player2,
-                    line=dict(color='#00FF88', width=3), fillcolor=hex_to_rgba('#00FF88', 0.2)
+                    line=dict(color='#AFC3D2', width=3), fillcolor=hex_to_rgba('#AFC3D2', 0.2)
                 ))
-                st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PLAYMAKING MATRIX"), use_container_width=True)
+                st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "Creative Index"), use_container_width=True)
             st.markdown("---")
 
-            st.markdown("<p class='section-label'>// PASSING PROFILE</p>", unsafe_allow_html=True)
+            # ── PASSING PROFILE ─────────────────────────────
+            st.markdown("<p class='section-label'>PASSING</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                p1_alb = p1_data['accurateLongBalls'] if 'accurateLongBalls' in p1_data else 0
-                p2_alb = p2_data['accurateLongBalls'] if 'accurateLongBalls' in p2_data else 0
+                p1_alb = p1_data.get('accurateLongBalls', 0)
+                p2_alb = p2_data.get('accurateLongBalls', 0)
                 passing_metrics = {
                     'Touches':             (int(p1_data['touches']),        int(p2_data['touches'])),
                     'Key Passes':          (int(p1_data['keyPasses']),      int(p2_data['keyPasses'])),
                     'Accurate Passes':     (int(p1_data['accuratePasses']), int(p2_data['accuratePasses'])),
                     'Accurate Long Balls': (int(p1_alb),                    int(p2_alb)),
                 }
-                pass_cmp_df = pd.DataFrame({'Passing Metric': list(passing_metrics.keys()),
+                pass_cmp_df = pd.DataFrame({'Metric': list(passing_metrics.keys()),
                                             player1: [v[0] for v in passing_metrics.values()],
                                             player2: [v[1] for v in passing_metrics.values()]})
                 st.markdown(df_to_plain_table(pass_cmp_df), unsafe_allow_html=True)
@@ -1021,94 +787,105 @@ with tab3:
                        (p1_data['accuratePasses']/max_ap*100), (p1_alb/max_alb*100)],
                     theta=['Touches', 'Key Passes', 'Accurate Passes', 'Long Balls'],
                     fill='toself', name=player1,
-                    line=dict(color='#00D9FF', width=3), fillcolor=hex_to_rgba('#00D9FF', 0.2)
+                    line=dict(color='#0E7C86', width=3), fillcolor=hex_to_rgba('#0E7C86', 0.2)
                 ))
                 fig_passing.add_trace(go.Scatterpolar(
                     r=[(p2_data['touches']/max_tch*100), (p2_data['keyPasses']/max_kp*100),
                        (p2_data['accuratePasses']/max_ap*100), (p2_alb/max_alb*100)],
                     theta=['Touches', 'Key Passes', 'Accurate Passes', 'Long Balls'],
                     fill='toself', name=player2,
-                    line=dict(color='#00FF88', width=3), fillcolor=hex_to_rgba('#00FF88', 0.2)
+                    line=dict(color='#AFC3D2', width=3), fillcolor=hex_to_rgba('#AFC3D2', 0.2)
                 ))
-                st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "PASSING PROFILE RADAR"), use_container_width=True)
+                st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "Passing Radar"), use_container_width=True)
             st.markdown("---")
 
-            st.markdown("<p class='section-label'>// DEFENSIVE ACTIONS</p>", unsafe_allow_html=True)
+            # ── DEFENSIVE ACTIONS ─────────────────────────────────
+            st.markdown("<p class='section-label'>DEFENCE</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                rec1 = p1_data['ballRecovery'] if 'ballRecovery' in p1_data else 0
-                rec2 = p2_data['ballRecovery'] if 'ballRecovery' in p2_data else 0
+                rec1 = p1_data.get('ballRecovery', 0)
+                rec2 = p2_data.get('ballRecovery', 0)
                 defence_metrics = {
                     'Tackles Won':     (int(p1_data['tackles']),        int(p2_data['tackles'])),
                     'Interceptions':   (int(p1_data['interceptions']),  int(p2_data['interceptions'])),
+                    'Clearances':      (int(p1_data['clearances']),     int(p2_data['clearances'])),
                     'Aerial Duels Won':(int(p1_data['aerialDuelsWon']), int(p2_data['aerialDuelsWon'])),
-                    'Ground Duels Won':(int(p1_data['groundDuelsWon']), int(p2_data['groundDuelsWon'])),
                     'Ball Recovery':   (int(rec1), int(rec2)),
                 }
-                def_cmp_df = pd.DataFrame({'Defensive Action': list(defence_metrics.keys()),
+                def_cmp_df = pd.DataFrame({'Metric': list(defence_metrics.keys()),
                                            player1: [v[0] for v in defence_metrics.values()],
                                            player2: [v[1] for v in defence_metrics.values()]})
                 st.markdown(df_to_plain_table(def_cmp_df), unsafe_allow_html=True)
             with col2:
                 max_tck = max(p1_data['tackles'],        p2_data['tackles'],        1)
                 max_int = max(p1_data['interceptions'],  p2_data['interceptions'],  1)
+                max_clr = max(p1_data['clearances'],     p2_data['clearances'],     1)
                 max_aer = max(p1_data['aerialDuelsWon'], p2_data['aerialDuelsWon'], 1)
-                max_grd = max(p1_data['groundDuelsWon'], p2_data['groundDuelsWon'], 1)
                 max_rec = max(rec1, rec2, 1)
+                
                 fig_defence = go.Figure()
                 fig_defence.add_trace(go.Scatterpolar(
                     r=[(p1_data['tackles']/max_tck*100), (p1_data['interceptions']/max_int*100),
-                       (p1_data['aerialDuelsWon']/max_aer*100), (p1_data['groundDuelsWon']/max_grd*100), (rec1/max_rec*100)],
-                    theta=['Tackles','Interceptions','Aerials','Ground Duels','Ball Recovery'],
+                       (p1_data['clearances']/max_clr*100), (p1_data['aerialDuelsWon']/max_aer*100), (rec1/max_rec*100)],
+                    theta=['Tackles','Interceptions','Clearances','Aerials','Recovery'],
                     fill='toself', name=player1,
-                    line=dict(color='#00D9FF', width=3), fillcolor=hex_to_rgba('#00D9FF', 0.2)
+                    line=dict(color='#0E7C86', width=3), fillcolor=hex_to_rgba('#0E7C86', 0.2)
                 ))
                 fig_defence.add_trace(go.Scatterpolar(
                     r=[(p2_data['tackles']/max_tck*100), (p2_data['interceptions']/max_int*100),
-                       (p2_data['aerialDuelsWon']/max_aer*100), (p2_data['groundDuelsWon']/max_grd*100), (rec2/max_rec*100)],
-                    theta=['Tackles','Interceptions','Aerials','Ground Duels','Ball Recovery'],
+                       (p2_data['clearances']/max_clr*100), (p2_data['aerialDuelsWon']/max_aer*100), (rec2/max_rec*100)],
+                    theta=['Tackles','Interceptions','Clearances','Aerials','Recovery'],
                     fill='toself', name=player2,
-                    line=dict(color='#00FF88', width=3), fillcolor=hex_to_rgba('#00FF88', 0.2)
+                    line=dict(color='#AFC3D2', width=3), fillcolor=hex_to_rgba('#AFC3D2', 0.2)
                 ))
-                st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "DEFENSIVE MATRIX RADAR"), use_container_width=True)
+                st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "Defensive Radar"), use_container_width=True)
 
         elif is_p1_gk and is_p2_gk:
-            st.markdown("<p class='section-label'>// SHOT STOPPING DOSSIER</p>", unsafe_allow_html=True)
+            st.markdown("<p class='section-label'>GOALKEEPING</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                alb1 = p1_data['accurateLongBalls'] if 'accurateLongBalls' in p1_data else 0
-                alb2 = p2_data['accurateLongBalls'] if 'accurateLongBalls' in p2_data else 0
+                p1_punch = p1_data.get('punches', 0)
+                p2_punch = p2_data.get('punches', 0)
+                p1_sweep = p1_data.get('sweeperActions', 0)
+                p2_sweep = p2_data.get('sweeperActions', 0)
+                p1_prev  = p1_data.get('goalsPrevented', 0)
+                p2_prev  = p2_data.get('goalsPrevented', 0)
+
                 gk_metrics = {
-                    'Total Saves':        (int(p1_data['saves']),           int(p2_data['saves'])),
-                    'Clean Sheets':       (int(p1_data['cleanSheet']),      int(p2_data['cleanSheet'])),
-                    'Accurate Long Balls':(int(alb1),                      int(alb2)),
-                    'Errors Led To Goal': (int(p1_data['errorLeadToGoal']), int(p2_data['errorLeadToGoal'])),
+                    'Saves':           (int(p1_data['saves']),           int(p2_data['saves'])),
+                    'Save %':          (float(p1_data.get('save_pct', 0)), float(p2_data.get('save_pct', 0))),
+                    'Clean Sheets':    (int(p1_data['cleanSheet']),      int(p2_data['cleanSheet'])),
+                    'High Claims':     (int(p1_data['highClaims']),      int(p2_data['highClaims'])),
+                    'Punches':         (int(p1_punch),                   int(p2_punch)),
+                    'Sweeper Actions': (int(p1_sweep),                   int(p2_sweep)),
+                    'Goals Prevented': (float(p1_prev),                  float(p2_prev))
                 }
-                gk_cmp_df = pd.DataFrame({'Goalkeeper Metric': list(gk_metrics.keys()),
+                gk_cmp_df = pd.DataFrame({'Metric': list(gk_metrics.keys()),
                                           player1: [v[0] for v in gk_metrics.values()],
                                           player2: [v[1] for v in gk_metrics.values()]})
                 st.markdown(df_to_plain_table(gk_cmp_df), unsafe_allow_html=True)
             with col2:
                 max_sv  = max(p1_data['saves'],           p2_data['saves'],           1)
                 max_cs  = max(p1_data['cleanSheet'],       p2_data['cleanSheet'],       1)
-                max_alb = max(alb1, alb2, 1)
-                max_err = max(p1_data['errorLeadToGoal'], p2_data['errorLeadToGoal'],  1)
+                max_hc  = max(p1_data['highClaims'],      p2_data['highClaims'],      1)
+                max_pnc = max(p1_punch, p2_punch, 1)
+                
                 fig_gk = go.Figure()
                 fig_gk.add_trace(go.Scatterpolar(
                     r=[(p1_data['saves']/max_sv*100), (p1_data['cleanSheet']/max_cs*100),
-                       (alb1/max_alb*100), ((max_err-p1_data['errorLeadToGoal'])/max_err*100)],
-                    theta=['Saves','Clean Sheets','Long Balls','Error Avoidance'],
+                       (p1_data['highClaims']/max_hc*100), (p1_punch/max_pnc*100)],
+                    theta=['Saves','Clean Sheets','High Claims','Punches'],
                     fill='toself', name=player1,
-                    line=dict(color='#00D9FF', width=3), fillcolor=hex_to_rgba('#00D9FF', 0.2)
+                    line=dict(color='#0E7C86', width=3), fillcolor=hex_to_rgba('#0E7C86', 0.2)
                 ))
                 fig_gk.add_trace(go.Scatterpolar(
                     r=[(p2_data['saves']/max_sv*100), (p2_data['cleanSheet']/max_cs*100),
-                       (alb2/max_alb*100), ((max_err-p2_data['errorLeadToGoal'])/max_err*100)],
-                    theta=['Saves','Clean Sheets','Long Balls','Error Avoidance'],
+                       (p2_data['highClaims']/max_hc*100), (p2_punch/max_pnc*100)],
+                    theta=['Saves','Clean Sheets','High Claims','Punches'],
                     fill='toself', name=player2,
-                    line=dict(color='#00FF88', width=3), fillcolor=hex_to_rgba('#00FF88', 0.2)
+                    line=dict(color='#AFC3D2', width=3), fillcolor=hex_to_rgba('#AFC3D2', 0.2)
                 ))
-                st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "GOALKEEPER RADAR"), use_container_width=True)
+                st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "Goalkeeper Radar"), use_container_width=True)
         else:
             st.warning("⚠️ YOU HAVE SELECTED ONE OUTFIELD PLAYER AND ONE GOALKEEPER. DIRECT METRIC COMPARISON IS NOT RECOMMENDED FOR DIFFERENT ROLES.")
     else:
@@ -1120,6 +897,6 @@ with tab3:
 st.markdown("""
     <div style='text-align: center; color: var(--text-muted); margin-top: 50px; padding: 20px; font-family: JetBrains Mono, monospace; font-size: 0.75rem; border-top: 1px solid #145D6D;'>
         <span style='color: var(--accent-primary); font-weight: 700; letter-spacing: 2px;'>EUROPEAN FOOTBALL ANALYTICS HUB</span><br>
-        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE | V3.5 FILTER REDESIGN COMPLETE</div>
+        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE</div>
     </div>
 """, unsafe_allow_html=True)
