@@ -71,39 +71,51 @@ st.markdown("""
             text-transform: uppercase;
         }
 
-        /* Professional Filter Styling */
+        /* ═══════════════════════════════════════════════════════════
+           PROFESSIONAL FILTER STYLING
+           ═══════════════════════════════════════════════════════════ */
         div[data-baseweb="select"] > div {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted) !important;
             color: var(--text-primary) !important;
-            border-radius: 4px !important;
+            border-radius: 6px !important;
+            font-family: 'Inter', sans-serif !important;
+            transition: all 0.2s ease !important;
+        }
+        div[data-baseweb="select"] > div:hover {
+            border-color: var(--accent-primary) !important;
+            box-shadow: 0 0 8px rgba(14, 124, 134, 0.1) !important;
         }
         div[data-baseweb="popover"] > div {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted) !important;
+            border-radius: 6px !important;
         }
         li[role="option"] {
             background-color: transparent !important;
             color: var(--text-primary) !important;
+            font-family: 'Inter', sans-serif !important;
         }
         li[role="option"]:hover {
             background-color: rgba(14, 124, 134, 0.2) !important;
         }
         
-        /* Clean tag styling - no black background */
+        /* Clean tag styling */
         span[data-baseweb="tag"] {
-            background-color: rgba(14, 124, 134, 0.25) !important;
+            background-color: rgba(14, 124, 134, 0.3) !important;
             color: var(--accent-secondary) !important;
             border: 1px solid var(--accent-primary) !important;
             font-family: 'Inter', sans-serif !important;
             font-size: 0.85rem !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
         }
 
         /* KPI Cards */
         [data-testid="stMetric"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
-            border-radius: 4px !important;
+            border-radius: 6px !important;
             padding: 16px;
             box-shadow: none;
             border-left: 3px solid var(--accent-primary);
@@ -147,7 +159,7 @@ st.markdown("""
         [data-testid="stDataFrame"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted) !important;
-            border-radius: 4px !important;
+            border-radius: 6px !important;
         }
         [data-testid="stDataFrame"] > div, 
         [data-testid="stDataFrame"] table, 
@@ -222,9 +234,13 @@ def aggregate_player_stats(df):
     matches_played = df.groupby('player').size().reset_index(name='matches_played')
     agg_df = pd.merge(agg_df, matches_played, on='player', how='left')
     
-    # Recalculate big chance conversion with 25% match threshold
+    # ═══════════════════════════════════════════════════════════
+    # IMPROVED BIG CHANCE CONVERSION LOGIC
+    # Only calculate for players with meaningful sample size (25th percentile)
+    # ═══════════════════════════════════════════════════════════
+    min_matches_threshold = agg_df['matches_played'].quantile(0.25)
     agg_df['big_chance_conv'] = np.where(
-        (agg_df['bigChancesCreated'] > 0) & (agg_df['matches_played'] >= agg_df['matches_played'].quantile(0.25)),
+        (agg_df['bigChancesCreated'] > 0) & (agg_df['matches_played'] >= min_matches_threshold),
         np.clip((agg_df['goals'] / agg_df['bigChancesCreated']) * 100, 0, 100),
         0
     )
@@ -302,6 +318,17 @@ def apply_sofascore_radar_layout(fig, title):
     )
     return fig
 
+# ═══════════════════════════════════════════════════════════════
+# IMPROVED RADAR COLOR PALETTE (Brighter & More Distinguishable)
+# ═══════════════════════════════════════════════════════════════
+RADAR_COLORS = [
+    '#00D9FF',  # Bright Cyan
+    '#00FF88',  # Bright Green
+    '#FF006E',  # Bright Magenta
+    '#FFB700',  # Bright Amber
+    '#7E5BEF',  # Bright Purple
+]
+
 def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     gradient_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
     
@@ -365,15 +392,39 @@ all_teams = sorted(raw_df['team'].unique().tolist())
 all_leagues = sorted(raw_df['league_name'].unique().tolist())
 all_seasons = sorted(raw_df['season_year'].unique().tolist())
 
-# Default to ALL leagues instead of top 5
+# Default to ALL leagues
 default_leagues = all_leagues
 
-st.sidebar.markdown("<h2 style='font-family: Bebas Neue; color: #0E7C86; letter-spacing: 2px; margin-bottom: 0;'>INTELLIGENCE FILTERS</h2>", unsafe_allow_html=True)
-st.sidebar.markdown("<hr style='margin: 10px 0; border-color: #145D6D;'>", unsafe_allow_html=True)
+# ═══════════════════════════════════════════════════════════════
+# PROFESSIONAL FILTER SIDEBAR
+# ═══════════════════════════════════════════════════════════════
+st.sidebar.markdown("""
+    <div style='background: linear-gradient(135deg, rgba(14, 124, 134, 0.1) 0%, rgba(99, 174, 181, 0.05) 100%); 
+                border: 1px solid #145D6D; border-radius: 8px; padding: 20px; margin-bottom: 20px;'>
+        <h2 style='font-family: Bebas Neue; color: #0E7C86; letter-spacing: 2px; margin: 0 0 20px 0; font-size: 1.4rem;'>
+            ⚙️ INTELLIGENCE FILTERS
+        </h2>
+    </div>
+""", unsafe_allow_html=True)
 
-selected_leagues = st.sidebar.multiselect("COMPETITION", options=all_leagues, default=default_leagues, key="leagues_filter")
-selected_seasons = st.sidebar.multiselect("SEASON", options=all_seasons, default=[all_seasons[-1]], key="seasons_filter")
-selected_teams = st.sidebar.multiselect("CLUB ROSTER", options=all_teams, default=None, key="teams_filter")
+selected_leagues = st.sidebar.multiselect(
+    "COMPETITION", 
+    options=all_leagues, 
+    default=default_leagues, 
+    key="leagues_filter"
+)
+selected_seasons = st.sidebar.multiselect(
+    "SEASON", 
+    options=all_seasons, 
+    default=[all_seasons[-1]], 
+    key="seasons_filter"
+)
+selected_teams = st.sidebar.multiselect(
+    "CLUB ROSTER", 
+    options=all_teams, 
+    default=None, 
+    key="teams_filter"
+)
 
 st.sidebar.markdown("<hr style='margin: 20px 0; border-color: #145D6D;'>", unsafe_allow_html=True)
 
@@ -392,30 +443,44 @@ player_agg_df = aggregate_player_stats(filtered_df)
 gk_agg_df = player_agg_df[player_agg_df['is_gk'] == 1]
 outfield_agg_df = player_agg_df[player_agg_df['is_gk'] == 0]
 
-st.sidebar.markdown(f"""
-    <div style='background-color: var(--bg-card); padding: 16px; border: 1px solid var(--accent-muted); border-left: 4px solid var(--accent-primary); font-family: Inter, sans-serif; border-radius: 4px;'>
-        <div style='font-family: Bebas Neue; color: var(--accent-primary); font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 12px;'>DATA VOLUME SUMMARY</div>
-        <div style='display: flex; justify-content: space-between; margin-bottom: 8px;'>
-            <span style='color: var(--text-secondary); font-size: 0.8rem; font-family: JetBrains Mono; text-transform: uppercase;'>Total Records:</span>
-            <span style='color: var(--text-primary); font-family: JetBrains Mono; font-weight: 700;'>{len(filtered_df)}</span>
+# ═══════════════════════════════════════════════════════════════
+# PROFESSIONAL DATA SUMMARY BOX
+# ═══════════════════════════════════════════════════════════════
+st.sidebar.markdown("""
+    <div style='background: linear-gradient(135deg, #0D1C25 0%, #132733 100%); 
+                padding: 18px; border: 1px solid var(--accent-primary); 
+                border-left: 4px solid #00D9FF; font-family: Inter, sans-serif; border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(14, 124, 134, 0.15);'>
+        <div style='font-family: Bebas Neue; color: #00D9FF; font-size: 1.2rem; letter-spacing: 1px; margin-bottom: 14px; text-transform: uppercase;'>
+            📊 DATA VOLUME
         </div>
-        <div style='display: flex; justify-content: space-between; margin-bottom: 8px;'>
-            <span style='color: var(--text-secondary); font-size: 0.8rem; font-family: JetBrains Mono; text-transform: uppercase;'>Unique Players:</span>
-            <span style='color: var(--accent-secondary); font-family: JetBrains Mono; font-weight: 700;'>{len(player_agg_df)}</span>
-        </div>
-        <div style='display: flex; justify-content: space-between;'>
-            <span style='color: var(--text-secondary); font-size: 0.8rem; font-family: JetBrains Mono; text-transform: uppercase;'>Competitions:</span>
-            <span style='color: var(--text-primary); font-family: JetBrains Mono; font-weight: 700;'>{len(selected_leagues)}</span>
+        <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 12px;'>
+            <div style='background: rgba(0, 217, 255, 0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(0, 217, 255, 0.2);'>
+                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Records</span>
+                <span style='color: #00D9FF; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            </div>
+            <div style='background: rgba(0, 255, 136, 0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.2);'>
+                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Players</span>
+                <span style='color: #00FF88; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            </div>
+            <div style='background: rgba(255, 183, 0, 0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(255, 183, 0, 0.2);'>
+                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Competitions</span>
+                <span style='color: #FFB700; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            </div>
+            <div style='background: rgba(126, 91, 239, 0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(126, 91, 239, 0.2);'>
+                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Seasons</span>
+                <span style='color: #7E5BEF; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            </div>
         </div>
     </div>
-""", unsafe_allow_html=True)
+""".format(len(filtered_df), len(player_agg_df), len(selected_leagues), len(selected_seasons)), unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
 # HERO BANNER
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
     <div style="background-color: #030B12; padding: 40px 30px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 40px; position: relative; overflow: hidden; border-radius: 4px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.2</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.3</div>
         <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 4rem; font-weight: 400; letter-spacing: 3px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
         <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #63AEB5; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
             <span>[+] Elite Global Leagues</span>
@@ -459,9 +524,8 @@ with tab1:
         max_kp = max(top_creators_df['keyPasses'].max(), 1)
         
         fig_pm_radar = go.Figure()
-        radar_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
         for idx, (_, p_row) in enumerate(top_creators_df.iterrows()):
-            color = radar_palette[idx % len(radar_palette)]
+            color = RADAR_COLORS[idx % len(RADAR_COLORS)]
             alb = p_row['accurateLongBalls'] if 'accurateLongBalls' in p_row else 0
             fig_pm_radar.add_trace(go.Scatterpolar(
                 r=[
@@ -475,7 +539,7 @@ with tab1:
                 fill='toself',
                 name=p_row['player'],
                 line=dict(color=color, width=3),
-                fillcolor=hex_to_rgba(color, 0.15)
+                fillcolor=hex_to_rgba(color, 0.2)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "PASSING MATRIX"), use_container_width=True)
         
@@ -506,9 +570,8 @@ with tab1:
         max_rec = max(top_defenders_df['recoveries'].max() if 'recoveries' in top_defenders_df.columns else 1, 1)
         
         fig_def_radar = go.Figure()
-        radar_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
         for idx, (_, p_row) in enumerate(top_defenders_df.iterrows()):
-            color = radar_palette[idx % len(radar_palette)]
+            color = RADAR_COLORS[idx % len(RADAR_COLORS)]
             rec = p_row['recoveries'] if 'recoveries' in p_row else 0
             fig_def_radar.add_trace(go.Scatterpolar(
                 r=[
@@ -522,7 +585,7 @@ with tab1:
                 fill='toself',
                 name=p_row['player'],
                 line=dict(color=color, width=3),
-                fillcolor=hex_to_rgba(color, 0.15)
+                fillcolor=hex_to_rgba(color, 0.2)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_def_radar, "DEFENSIVE EFFICIENCY MATRIX"), use_container_width=True)
         
@@ -572,9 +635,8 @@ with tab2:
             max_drb_t = max(top_creative_teams['successfulDribbles'].max(), 1)
             
             fig_team_pm = go.Figure()
-            radar_palette = ['#0E7C86', '#63AEB5', '#AFC3D2', '#D0D7DD', '#E8ECEF']
             for idx, (_, t_row) in enumerate(top_creative_teams.iterrows()):
-                color = radar_palette[idx % len(radar_palette)]
+                color = RADAR_COLORS[idx % len(RADAR_COLORS)]
                 fig_team_pm.add_trace(go.Scatterpolar(
                     r=[
                         (t_row['bigChancesCreated'] / max_bcc_t * 100) if max_bcc_t > 0 else 0,
@@ -585,7 +647,7 @@ with tab2:
                     fill='toself',
                     name=t_row['team'],
                     line=dict(color=color, width=3),
-                    fillcolor=hex_to_rgba(color, 0.15)
+                    fillcolor=hex_to_rgba(color, 0.2)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm, "ELITE CREATIVE TEAMS MATRIX"), use_container_width=True)
             
@@ -597,7 +659,7 @@ with tab2:
             
             fig_team_def = go.Figure()
             for idx, (_, t_row) in enumerate(top_def_teams.iterrows()):
-                color = radar_palette[idx % len(radar_palette)]
+                color = RADAR_COLORS[idx % len(RADAR_COLORS)]
                 fig_team_def.add_trace(go.Scatterpolar(
                     r=[
                         (t_row['tackles'] / max_tck_t * 100) if max_tck_t > 0 else 0,
@@ -608,7 +670,7 @@ with tab2:
                     fill='toself',
                     name=t_row['team'],
                     line=dict(color=color, width=3),
-                    fillcolor=hex_to_rgba(color, 0.15)
+                    fillcolor=hex_to_rgba(color, 0.2)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "ELITE DEFENSIVE TEAMS MATRIX"), use_container_width=True)
 
@@ -668,8 +730,8 @@ with tab3:
         with col1:
             p1_type = "GOALKEEPER" if p1_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #0E7C86; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #0E7C86; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00D9FF; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #00D9FF; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // A ({p1_type})</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue, sans-serif; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player1}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p1_data['team']} | {p1_data['league_name']}</div>
                 </div>
@@ -678,8 +740,8 @@ with tab3:
         with col2:
             p2_type = "GOALKEEPER" if p2_data['is_gk'] else "OUTFIELD"
             st.markdown(f"""
-                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #AFC3D2; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
-                    <div style='color: #AFC3D2; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
+                <div style='background-color: var(--bg-card); border: 1px solid var(--accent-muted); border-left: 6px solid #00FF88; padding: 25px; margin-bottom: 20px; border-radius: 4px;'>
+                    <div style='color: #00FF88; font-family: JetBrains Mono, monospace; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 8px;'>TARGET DOSSIER // B ({p2_type})</div>
                     <div style='color: var(--text-primary); font-family: Bebas Neue, sans-serif; font-size: 2.5rem; letter-spacing: 1.5px; margin-bottom: 5px; line-height: 1;'>{player2}</div>
                     <div style='color: var(--text-secondary); font-size: 0.9em; font-family: JetBrains Mono; text-transform: uppercase;'>{p2_data['team']} | {p2_data['league_name']}</div>
                 </div>
@@ -759,8 +821,8 @@ with tab3:
                     theta=['Accurate Passes', 'Touches', 'Long Balls', 'Big Chances', 'Key Passes'],
                     fill='toself',
                     name=player1,
-                    line=dict(color='#0E7C86', width=3),
-                    fillcolor=hex_to_rgba('#0E7C86', 0.2)
+                    line=dict(color='#00D9FF', width=3),
+                    fillcolor=hex_to_rgba('#00D9FF', 0.2)
                 ))
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[
@@ -773,8 +835,8 @@ with tab3:
                     theta=['Accurate Passes', 'Touches', 'Long Balls', 'Big Chances', 'Key Passes'],
                     fill='toself',
                     name=player2,
-                    line=dict(color='#AFC3D2', width=3),
-                    fillcolor=hex_to_rgba('#AFC3D2', 0.2)
+                    line=dict(color='#00FF88', width=3),
+                    fillcolor=hex_to_rgba('#00FF88', 0.2)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PASSING MATRIX RADAR"), use_container_width=True)
             
@@ -820,8 +882,8 @@ with tab3:
                     theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Recoveries'],
                     fill='toself',
                     name=player1,
-                    line=dict(color='#0E7C86', width=3),
-                    fillcolor=hex_to_rgba('#0E7C86', 0.2)
+                    line=dict(color='#00D9FF', width=3),
+                    fillcolor=hex_to_rgba('#00D9FF', 0.2)
                 ))
                 fig_defence.add_trace(go.Scatterpolar(
                     r=[
@@ -834,8 +896,8 @@ with tab3:
                     theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Recoveries'],
                     fill='toself',
                     name=player2,
-                    line=dict(color='#AFC3D2', width=3),
-                    fillcolor=hex_to_rgba('#AFC3D2', 0.2)
+                    line=dict(color='#00FF88', width=3),
+                    fillcolor=hex_to_rgba('#00FF88', 0.2)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "DEFENSIVE MATRIX RADAR"), use_container_width=True)
 
@@ -880,8 +942,8 @@ with tab3:
                     theta=['Saves', 'Clean Sheets', 'High Claims', 'Long Balls', 'Error Avoidance'],
                     fill='toself',
                     name=player1,
-                    line=dict(color='#0E7C86', width=3),
-                    fillcolor=hex_to_rgba('#0E7C86', 0.2)
+                    line=dict(color='#00D9FF', width=3),
+                    fillcolor=hex_to_rgba('#00D9FF', 0.2)
                 ))
                 fig_gk.add_trace(go.Scatterpolar(
                     r=[
@@ -894,8 +956,8 @@ with tab3:
                     theta=['Saves', 'Clean Sheets', 'High Claims', 'Long Balls', 'Error Avoidance'],
                     fill='toself',
                     name=player2,
-                    line=dict(color='#AFC3D2', width=3),
-                    fillcolor=hex_to_rgba('#AFC3D2', 0.2)
+                    line=dict(color='#00FF88', width=3),
+                    fillcolor=hex_to_rgba('#00FF88', 0.2)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "GOALKEEPER RADAR"), use_container_width=True)
 
