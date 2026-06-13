@@ -57,39 +57,43 @@ st.markdown("""
             font-weight: 400;
             text-transform: uppercase;
         }
-        div[data-baseweb="select"] > div {
-            background-color: var(--bg-card) !important;
+        /* ── CUSTOM DROPDOWN STYLES ── */
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="popover"] > div {
+            background-color: var(--bg-card) !important; /* Solid background prevents weird overlaps */
             border: 1px solid var(--accent-muted) !important;
             color: var(--text-primary) !important;
-            border-radius: 6px !important;
+            border-radius: 10px !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+        li[role="option"] {
+            background-color: transparent !important;
+            color: var(--text-primary) !important;
             font-family: 'Inter', sans-serif !important;
-            transition: all 0.2s ease !important;
+        }
+        li[role="option"]:hover {
+            background-color: rgba(14, 124, 134, 0.2) !important;
         }
 
-    /* ── SELECTED TAGS (Clean, readable spacing with no text clipping) ── */
+        /* ── SELECTED TAGS (Clean layout, no clipping) ── */
         span[data-baseweb="tag"] {
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 4px !important;
             background-color: rgba(14, 124, 134, 0.3) !important;
-            color: var(--accent-secondary) !important;
             border: 1px solid var(--accent-primary) !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 0.85rem !important;
             border-radius: 4px !important;
-            margin: 4px !important;
-            padding: 0 4px !important;
-            white-space: nowrap !important;
-            box-sizing: border-box !important;
+            margin: 2px !important;
         }
 
-        /* Remove the inner solid background and normalize tag content spacing */
+        /* Kills the black gradient blur without breaking the layout */
         span[data-baseweb="tag"] span {
             background-color: transparent !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            display: inline-flex !important;
-            align-items: center !important;
+            color: var(--accent-secondary) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.85rem !important;
+        }
+
+        /* Keep the 'X' button colored correctly */
+        span[data-baseweb="tag"] svg {
+            fill: var(--accent-secondary) !important;
         }
 
         /* Disable the Streamlit gradient mask on tag text */
@@ -109,12 +113,7 @@ st.markdown("""
             padding-right: 4px !important;
         }
 
-        li[role="option"] {
-            background-color: transparent !important;
-            color: var(--text-primary) !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-        li[role="option"]:hover { background-color: rgba(14, 124, 134, 0.2) !important; }
+        /* Removed duplicate li[role="option"] rules above; consolidated styles applied. */
         [data-testid="stMetric"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
