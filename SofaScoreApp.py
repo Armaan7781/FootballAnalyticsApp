@@ -487,7 +487,7 @@ tab1, tab2, tab3 = st.tabs(["LEAGUE LEVEL ANALYSIS", "CLUB TACTICAL PROFILES", "
 # TAB 1: League Level Analysis
 # ═══════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
+    st.markdown("<div class='tactical-header'>ATTACKING WINDOW — TOP 5 PLAYERS</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goals', 'player', "GOALS REGISTERED"), use_container_width=True)
