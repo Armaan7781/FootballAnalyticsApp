@@ -341,6 +341,12 @@ def aggregate_player_stats(df):
     
     agg_df = df.groupby('player').agg(agg_dict).reset_index()
         
+    if len(agg_df) > 0:
+        top_20_goals = agg_df.nlargest(20, 'goals')
+        agg_df['goal_conversion'] = 0.0
+        mask = agg_df['player'].isin(top_20_goals['player']) & (agg_df['totalShots'] > 0)
+        agg_df.loc[mask, 'goal_conversion'] = np.clip((agg_df.loc[mask, 'goals'] / agg_df.loc[mask, 'totalShots']) * 100, 0, 100)
+        
     if 'accuratePasses' in agg_df.columns and 'totalPasses' in agg_df.columns:
         agg_df['accuratePassesPercentage'] = np.where(
             agg_df['totalPasses'] > 0, np.clip((agg_df['accuratePasses'] / agg_df['totalPasses']) * 100, 0, 100), 0
@@ -406,7 +412,7 @@ def df_to_plain_table(df):
 # CHART FACTORIES
 # ═══════════════════════════════════════════════════════════════
 RADAR_COLORS = ['#00B4D8', '#0096C7', '#90BE6D', '#F9C74F', '#F98444', '#F94144', '#577590']
-BAR_COLORS = ['#00B4D8', '#0096C7', '#90BE6D', '#F9C74F', '#577590']
+BAR_RANK_COLORS = ["#0E7C86", "#3B99A3", "#6EB6BD", "#A7D2D7", "#DCECEF"]
 
 def apply_sofascore_radar_layout(fig, title):
     fig.update_layout(
@@ -414,14 +420,14 @@ def apply_sofascore_radar_layout(fig, title):
             bgcolor="#041018",
             radialaxis=dict(
                 visible=True, range=[0, 100],
-                gridcolor="rgba(255,255,255,0.15)",
-                linecolor="rgba(255,255,255,0.15)",
+                gridcolor="rgba(255,255,255,0.1)",
+                linecolor="rgba(255,255,255,0.1)",
                 tickfont=dict(color="#6C8594", family="JetBrains Mono", size=10)
             ),
             angularaxis=dict(
-                gridcolor="rgba(255,255,255,0.15)",
-                linecolor="rgba(255,255,255,0.15)",
-                tickfont=dict(family="Inter", size=13, color="#F5F7FA", weight=600) # Fixed: removed quotes around 600
+                gridcolor="rgba(255,255,255,0.1)",
+                linecolor="rgba(255,255,255,0.1)",
+                tickfont=dict(family="Inter", size=13, color="#F5F7FA", weight=700) 
             )
         ),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -429,7 +435,7 @@ def apply_sofascore_radar_layout(fig, title):
         font=dict(color="#F5F7FA"),
         title=dict(
             text=title,
-            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), # Fixed: removed quotes around 700
+            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), 
             y=0.96, x=0.04, xanchor='left', yanchor='top'
         ),
         height=480,
@@ -447,7 +453,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     values = sorted_df[value_col].tolist()
     metrics_rev = list(reversed(metrics))
     values_rev = list(reversed(values))
-    bar_colors_rev = [BAR_COLORS[len(metrics_rev) - 1 - i] for i in range(len(metrics_rev))]
+    bar_colors_rev = [BAR_RANK_COLORS[len(metrics_rev) - 1 - i] for i in range(len(metrics_rev))]
     
     fig = go.Figure(data=[
         go.Bar(
@@ -462,7 +468,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
     fig.update_layout(
         title=dict(
             text=title,
-            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), # Fixed: removed quotes around 700
+            font=dict(family="Inter", size=16, color="#F5F7FA", weight=700), 
             y=0.96, x=0.0, xanchor='left', yanchor='top'
         ),
         xaxis=dict(
@@ -470,7 +476,7 @@ def create_ranked_scouting_bar(df_subset, value_col, label_col, title):
             tickfont=dict(family="JetBrains Mono", color="#6C8594", size=10),
             gridcolor="#145D6D", gridwidth=0.5, zeroline=False
         ),
-        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight=600)), # Fixed: removed quotes around 600
+        yaxis=dict(tickfont=dict(family="Inter", color="#F5F7FA", size=12, weight=600)),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         height=320,
@@ -541,15 +547,12 @@ with tab1:
     st.markdown("<div class='tactical-header'>ATTACKING PRODUCTION</div>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     
-    top_20_scorers = outfield_agg_df.nlargest(20, 'goals').copy()
-    top_20_scorers['goal_conversion'] = np.where(top_20_scorers['totalShots'] > 0, (top_20_scorers['goals'] / top_20_scorers['totalShots']) * 100, 0)
-
     with col1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goals', 'player', "Goals Registered"), use_container_width=True)
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "Shot Volume"), use_container_width=True)
     with col2:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "Expected Goals (xG)"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(top_20_scorers, 'goal_conversion', 'player', "Best Goal Conversion Rate"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Best Goal Conversion Rate"), use_container_width=True)
 
     st.markdown("---")
     st.markdown("<div class='tactical-header'>PLAYMAKING & CREATIVITY</div>", unsafe_allow_html=True)
@@ -577,7 +580,7 @@ with tab1:
                 r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                 theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "Playmaking Radar"), use_container_width=True)
 
@@ -608,7 +611,7 @@ with tab1:
                 r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
                 theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_pass_radar, "Passing Radar"), use_container_width=True)
 
@@ -636,7 +639,7 @@ with tab1:
                    (p_row['clearances']/max_clr*100), (p_row['aerialDuelsWon']/max_aer*100), (rec/max_rec*100)],
                 theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                 fill='toself', name=p_row['player'],
-                line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
             ))
         st.plotly_chart(apply_sofascore_radar_layout(fig_def_radar, "Defensive Radar"), use_container_width=True)
 
@@ -668,7 +671,7 @@ with tab1:
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_gk_radar, "Goalkeeper Radar"), use_container_width=True)
     else:
@@ -722,9 +725,9 @@ with tab2:
                     r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "Passing Radar (Top 5)"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "Passing Radar (Top 5 Teams)"), use_container_width=True)
 
         with col2:
             # ── PLAYMAKING RADAR ──
@@ -746,9 +749,9 @@ with tab2:
                     r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm, "Playmaking Radar (Top 5)"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm, "Playmaking Radar (Top 5 Teams)"), use_container_width=True)
             
         col3, col4 = st.columns(2)
         with col3:
@@ -769,9 +772,9 @@ with tab2:
                        (t_row['clearances']/max_clr_t*100), (t_row['aerialDuelsWon']/max_aer_t*100), (rec/max_rec_t*100)],
                     theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "Defensive Radar (Top 5)"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "Defensive Radar (Top 5 Teams)"), use_container_width=True)
             
         with col4:
             # ── GK RADAR ──
@@ -795,9 +798,9 @@ with tab2:
                     r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb_gk*100), (svc/max_svc*100), (pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=t_row['team'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk, "Goalkeeper Radar (Top 5)"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk, "Goalkeeper Radar (Top 5 Teams)"), use_container_width=True)
 
     else:
         team_df       = player_agg_df[player_agg_df['team'] == selected_team_tab2]
@@ -837,7 +840,7 @@ with tab2:
                     r=[(drb/max_drb*100), (foul/max_foul*100), (bcc/max_bcc*100), (pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm_rad, "Playmaking Radar"), use_container_width=True)
 
@@ -865,9 +868,9 @@ with tab2:
                 pob = p_row.get('totalOppositionHalfPasses', 0)
                 fig_team_pass_rad.add_trace(go.Scatterpolar(
                     r=[(kp/max_kp*100), (ap/max_ap*100), (alb/max_alb*100), (tch/max_tch*100), (pob/max_pob*100)],
-                    theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes in Opp Box'],
+                    theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass_rad, "Passing Radar"), use_container_width=True)
 
@@ -893,7 +896,7 @@ with tab2:
                        (p_row['clearances']/max_clr*100), (p_row['aerialDuelsWon']/max_aer*100), (rec/max_rec*100)],
                     theta=['Tackles', 'Interceptions', 'Clearances', 'Aerial Duels', 'Ball Recovery'],
                     fill='toself', name=p_row['player'],
-                    line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                    line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                 ))
             st.plotly_chart(apply_sofascore_radar_layout(fig_team_def_rad, "Defensive Radar"), use_container_width=True)
 
@@ -924,7 +927,7 @@ with tab2:
                         r=[(sv/max_sv*100), (cs/max_cs*100), (alb/max_alb*100), (svc/max_svc*100), (pen/max_pen*100)],
                         theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                         fill='toself', name=p_row['player'],
-                        line=dict(color=color, width=3.5), fillcolor=hex_to_rgba(color, 0.1)
+                        line=dict(color=color, width=4), fillcolor=hex_to_rgba(color, 0.1)
                     ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk_rad, "Goalkeeper Radar"), use_container_width=True)
 
@@ -1019,14 +1022,14 @@ with tab3:
                        (p1_data['bigChancesCreated']/max_bcc*100), (p1_pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[(p2_data['successfulDribbles']/max_drb*100), (p2_foul/max_foul*100),
                        (p2_data['bigChancesCreated']/max_bcc*100), (p2_pf3/max_pf3*100)],
                     theta=['Successful Dribbles', 'Was Fouled', 'Big Chances Created', 'Passes In Final Third'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "Playmaking Radar"), use_container_width=True)
             st.markdown("---")
@@ -1064,14 +1067,14 @@ with tab3:
                        (p1_alb/max_alb*100), (p1_data['touches']/max_tch*100), (p1_pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_passing.add_trace(go.Scatterpolar(
                     r=[(p2_data['keyPasses']/max_kp*100), (p2_data['accuratePasses']/max_ap*100),
                        (p2_alb/max_alb*100), (p2_data['touches']/max_tch*100), (p2_pob/max_pob*100)],
                     theta=['Key Passes', 'Accurate Passes', 'Accurate Long Balls', 'Touches', 'Passes In Opp Box'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "Passing Radar"), use_container_width=True)
             st.markdown("---")
@@ -1106,14 +1109,14 @@ with tab3:
                        (p1_data['clearances']/max_clr*100), (p1_data['aerialDuelsWon']/max_aer*100), (rec1/max_rec*100)],
                     theta=['Tackles','Interceptions','Clearances','Aerial Duels','Ball Recovery'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_defence.add_trace(go.Scatterpolar(
                     r=[(p2_data['tackles']/max_tck*100), (p2_data['interceptions']/max_int*100),
                        (p2_data['clearances']/max_clr*100), (p2_data['aerialDuelsWon']/max_aer*100), (rec2/max_rec*100)],
                     theta=['Tackles','Interceptions','Clearances','Aerial Duels','Ball Recovery'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "Defensive Radar"), use_container_width=True)
 
@@ -1152,14 +1155,14 @@ with tab3:
                        (p1_alb/max_alb*100), (p1_svc/max_svc*100), (p1_pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=player1,
-                    line=dict(color='#00B4D8', width=3.5), fillcolor=hex_to_rgba('#00B4D8', 0.1)
+                    line=dict(color='#00B4D8', width=4), fillcolor=hex_to_rgba('#00B4D8', 0.1)
                 ))
                 fig_gk.add_trace(go.Scatterpolar(
                     r=[(p2_data['saves']/max_sv*100), (p2_data['cleanSheet']/max_cs*100),
                        (p2_alb/max_alb*100), (p2_svc/max_svc*100), (p2_pen/max_pen*100)],
                     theta=['Saves', 'Clean Sheets', 'Accurate Long Balls', 'Saves Caught', 'Penalty Saves'],
                     fill='toself', name=player2,
-                    line=dict(color='#90BE6D', width=3.5), fillcolor=hex_to_rgba('#90BE6D', 0.1)
+                    line=dict(color='#90BE6D', width=4), fillcolor=hex_to_rgba('#90BE6D', 0.1)
                 ))
                 st.plotly_chart(apply_sofascore_radar_layout(fig_gk, "Goalkeeper Radar"), use_container_width=True)
         else:
