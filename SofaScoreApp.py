@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 # ═══════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="European Football Analytics Hub",
-    page_icon="🕸️",
+    page_icon="⚽",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -515,7 +515,7 @@ with tab1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "SHOT VOLUME"), use_container_width=True)
     with col2:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "EXPECTED GOALS (xG)"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Goal CONVERSION %(Amongst top 10 goal scorers"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Goal CONVERSION %"), use_container_width=True)
         
     st.markdown("---")
     
@@ -575,18 +575,18 @@ with tab1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'interceptions', 'player', "INTERCEPTIONS"), use_container_width=True)
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'aerialDuelsWon', 'player', "AERIAL DUELS WON"), use_container_width=True)
     with col2:
-        # UPDATED DEFENSIVE RADAR with ballrecovery
+        # UPDATED DEFENSIVE RADAR with ballRecovery
         top_defenders_df = outfield_agg_df.nlargest(5, 'tackles')
         max_tck = max(top_defenders_df['tackles'].max(), 1)
         max_int = max(top_defenders_df['interceptions'].max(), 1)
         max_aer = max(top_defenders_df['aerialDuelsWon'].max(), 1)
         max_grd = max(top_defenders_df['groundDuelsWon'].max(), 1)
-        max_rec = max(top_defenders_df['ballrecovery'].max() if 'ballrecovery' in top_defenders_df.columns else 1, 1)
+        max_rec = max(top_defenders_df['ballRecovery'].max() if 'ballRecovery' in top_defenders_df.columns else 1, 1)
         
         fig_def_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_defenders_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            rec = p_row['ballrecovery'] if 'ballrecovery' in p_row else 0
+            rec = p_row['ballRecovery'] if 'ballRecovery' in p_row else 0
             fig_def_radar.add_trace(go.Scatterpolar(
                 r=[
                     (p_row['tackles'] / max_tck * 100) if max_tck > 0 else 0,
@@ -678,12 +678,12 @@ with tab2:
             max_int_t = max(top_def_teams['interceptions'].max(), 1)
             max_aer_t = max(top_def_teams['aerialDuelsWon'].max(), 1)
             max_grd_t = max(top_def_teams['groundDuelsWon'].max(), 1)
-            max_rec_t = max(top_def_teams['ballrecovery'].max() if 'ballrecovery' in top_def_teams.columns else 1, 1)
+            max_rec_t = max(top_def_teams['ballRecovery'].max() if 'ballRecovery' in top_def_teams.columns else 1, 1)
             
             fig_team_def = go.Figure()
             for idx, (_, t_row) in enumerate(top_def_teams.iterrows()):
                 color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-                rec = t_row['ballrecovery'] if 'ballrecovery' in t_row else 0
+                rec = t_row['ballRecovery'] if 'ballRecovery' in t_row else 0
                 fig_team_def.add_trace(go.Scatterpolar(
                     r=[
                         (t_row['tackles'] / max_tck_t * 100) if max_tck_t > 0 else 0,
@@ -892,8 +892,8 @@ with tab3:
             st.markdown("<p style='font-family: Bebas Neue; color: #F5F7FA; font-size: 1.4rem; letter-spacing: 2px; border-bottom: 1px solid #145D6D; padding-bottom: 5px;'>// DEFENSIVE ACTIONS</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                rec1 = p1_data['ballrecovery'] if 'ballrecovery' in p1_data else 0
-                rec2 = p2_data['ballrecovery'] if 'ballrecovery' in p2_data else 0
+                rec1 = p1_data['ballRecovery'] if 'ballRecovery' in p1_data else 0
+                rec2 = p2_data['ballRecovery'] if 'ballRecovery' in p2_data else 0
                 defence_metrics = {
                     'Tackles Won': (int(p1_data['tackles']), int(p2_data['tackles'])),
                     'Interceptions': (int(p1_data['interceptions']), int(p2_data['interceptions'])),
@@ -1019,4 +1019,3 @@ st.markdown("""
         <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & MACRO SEASON AUDITING</div>
     </div>
 """, unsafe_allow_html=True)
-
