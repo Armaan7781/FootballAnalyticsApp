@@ -4,7 +4,6 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
 import warnings
-import unicodedata
 
 warnings.filterwarnings('ignore')
 
@@ -57,72 +56,232 @@ st.markdown("""
             font-weight: 400;
             text-transform: uppercase;
         }
-        /* ── CUSTOM DROPDOWN STYLES ── */
-        div[data-baseweb="select"] > div,
+
+        /* ════════════════════════════════════════════════════════════
+           PROFESSIONAL FILTER CONTAINER REDESIGN
+           ════════════════════════════════════════════════════════════ */
+
+        .filter-header-container {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 255, 136, 0.03) 100%);
+            border: 1px solid rgba(14, 124, 134, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #00D9FF;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── FILTER CARD GRID ── */
+        .filter-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .filter-card {
+            background: linear-gradient(135deg, #0D1C25 0%, #0a151e 100%);
+            border: 1px solid #145D6D;
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00D9FF, #00FF88);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-card:hover {
+            border-color: #0E7C86;
+            background: linear-gradient(135deg, #132733 0%, #0f232d 100%);
+            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .filter-card:hover::before {
+            opacity: 1;
+        }
+
+        .filter-card-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6C8594;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── ENHANCED SELECT STYLING ── */
+        div[data-baseweb="select"] > div {
+            background-color: rgba(0, 217, 255, 0.05) !important;
+            border: 1.5px solid #145D6D !important;
+            border-radius: 8px !important;
+            color: var(--text-primary) !important;
+            font-family: 'Inter', sans-serif !important;
+            transition: all 0.25s ease !important;
+            padding: 8px 12px !important;
+        }
+
+        div[data-baseweb="select"] > div:hover {
+            border-color: #00D9FF !important;
+            background-color: rgba(0, 217, 255, 0.08) !important;
+            box-shadow: 0 0 12px rgba(0, 217, 255, 0.2) !important;
+        }
+
+        div[data-baseweb="select"] input {
+            color: var(--text-primary) !important;
+            font-weight: 500 !important;
+        }
+
         div[data-baseweb="popover"] > div {
             background-color: var(--bg-card) !important;
-            border: 1px solid var(--accent-muted) !important;
-            color: var(--text-primary) !important;
-            border-radius: 10px !important;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid #145D6D !important;
+            border-radius: 8px !important;
         }
-        /* FIX: Ensure select input and spans have proper text color */
-        div[data-baseweb="select"] input,
-        div[data-baseweb="select"] span {
-            color: var(--text-primary) !important;
-            background-color: transparent !important;
-        }
-        div[data-baseweb="select"] input::placeholder {
-            color: var(--text-secondary) !important;
-        }
+
         li[role="option"] {
             background-color: transparent !important;
             color: var(--text-primary) !important;
             font-family: 'Inter', sans-serif !important;
         }
+
         li[role="option"]:hover {
             background-color: rgba(14, 124, 134, 0.2) !important;
         }
 
-        /* ── SELECTED TAGS (Clean layout, no clipping) ── */
+        /* ── TAG DISPLAY IMPROVEMENTS ── */
         span[data-baseweb="tag"] {
-            background-color: rgba(14, 124, 134, 0.3) !important;
-            border: 1px solid var(--accent-primary) !important;
-            border-radius: 4px !important;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%) !important;
+            border: 1px solid #00D9FF !important;
+            border-radius: 6px !important;
+            padding: 5px 10px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.8rem !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease;
             margin: 2px !important;
         }
 
-        /* Kills the black gradient blur without breaking the layout */
+        span[data-baseweb="tag"]:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.3) 0%, rgba(0, 255, 136, 0.15) 100%) !important;
+            border-color: #63AEB5 !important;
+            box-shadow: 0 2px 8px rgba(0, 217, 255, 0.2);
+        }
+
         span[data-baseweb="tag"] span {
-            background-color: transparent !important;
-            color: var(--accent-secondary) !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 0.85rem !important;
+            color: #00D9FF !important;
         }
 
-        /* Keep the 'X' button colored correctly */
         span[data-baseweb="tag"] svg {
-            fill: var(--accent-secondary) !important;
+            fill: #63AEB5 !important;
+            transition: all 0.2s ease;
         }
 
-        /* Disable the Streamlit gradient mask on tag text */
-        span[data-baseweb="tag"] span::before,
-        span[data-baseweb="tag"] span::after {
-            display: none !important;
+        span[data-baseweb="tag"]:hover svg {
+            fill: #FF006E !important;
         }
 
-        /* Fix inner text clipping & strip systemic dark boxes */
-        span[data-baseweb="tag"] * {
-            background-color: transparent !important;
-            overflow: visible !important;
+        /* ── DIVIDER ── */
+        .filter-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #145D6D, transparent);
+            margin: 20px 0;
         }
 
-        span[data-baseweb="tag"] > div:first-child {
-            padding-left: 4px !important;
-            padding-right: 4px !important;
+        /* ── DATA SUMMARY ENHANCED ── */
+        .data-summary-enhanced {
+            background: linear-gradient(135deg, #0D1C25 0%, #0a151e 100%);
+            border: 1px solid #145D6D;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
-        /* Removed duplicate li[role="option"] rules above; consolidated styles applied. */
+        .data-summary-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #00D9FF;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .data-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric-cell {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(99, 174, 181, 0.04) 100%);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.25s ease;
+        }
+
+        .metric-cell:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(99, 174, 181, 0.08) 100%);
+            border-color: rgba(0, 217, 255, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .metric-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6C8594;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        /* ── COLOR VARIANTS FOR METRICS ── */
+        .metric-records .metric-value { color: #00D9FF; }
+        .metric-players .metric-value { color: #00FF88; }
+        .metric-competitions .metric-value { color: #FFB700; }
+        .metric-seasons .metric-value { color: #7E5BEF; }
+
+        /* ── STANDARD STYLES ── */
         [data-testid="stMetric"] {
             background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted);
@@ -163,8 +322,6 @@ st.markdown("""
             color: var(--text-primary) !important;
             background-color: rgba(14, 124, 134, 0.1) !important;
         }
-
-        /* ── CUSTOM TABLE STYLES ── */
         .scout-table {
             width: 100%;
             border-collapse: collapse;
@@ -224,7 +381,6 @@ st.markdown("""
             font-weight: 700;
             margin-right: 6px;
         }
-
         .tactical-header {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
@@ -260,6 +416,12 @@ st.markdown("""
             font-weight: 700;
             margin-bottom: 8px;
         }
+
+        @media (max-width: 768px) {
+            .filter-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -271,16 +433,9 @@ def load_and_preprocess_data():
     try:
         url = "https://raw.githubusercontent.com/Armaan7781/FootballAnalyticsApp/main/Historical%20Data.csv"
         df = pd.read_csv(url).fillna(0)
-        
-        # Normalize text to remove special characters
         df['player'] = df['player'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
-        
-        # FIX: Append team name to player name to create a unique identifier
         df['player'] = df['player'] + ' (' + df['team'] + ')'
-        
-        # Identify goalkeepers
         df['is_gk'] = (df['saves'] > 0) | (df['savesParried'] > 0) | (df['punches'] > 0) | (df['highClaims'] > 0)
-        
         return df
     except Exception as e:
         st.error(f"Error loading data: {e}")
@@ -328,7 +483,6 @@ def hex_to_rgba(hex_color, opacity):
     return f'rgba({r}, {g}, {b}, {opacity})'
 
 def df_to_scout_table(df, col_rename=None):
-    """Ranked table with numbered badges — used in top-5 lists."""
     if col_rename:
         df = df.rename(columns=col_rename)
     cols = df.columns.tolist()
@@ -348,7 +502,6 @@ def df_to_scout_table(df, col_rename=None):
     return f"<table class='scout-table'><thead><tr>{header}</tr></thead><tbody>{rows_html}</tbody></table>"
 
 def df_to_plain_table(df):
-    """Comparison table without rank badges — used in H2H dossier."""
     cols = df.columns.tolist()
     header = "".join(f"<th>{c}</th>" for c in cols)
     rows_html = ""
@@ -454,19 +607,35 @@ all_leagues = sorted(raw_df['league_name'].unique().tolist())
 all_seasons = sorted(raw_df['season_year'].unique().tolist())
 all_teams   = sorted(raw_df['team'].unique().tolist())
 
+# ═══════════════════════════════════════════════════════════════
+# NEWLY REDESIGNED FILTER SECTION
+# ═══════════════════════════════════════════════════════════════
 st.sidebar.markdown("""
-    <div style='background: linear-gradient(135deg, rgba(14,124,134,0.1) 0%, rgba(99,174,181,0.05) 100%);
-                border: 1px solid #145D6D; border-radius: 8px; padding: 20px; margin-bottom: 20px;'>
-        <div style='font-family: Inter; font-weight:700; color: #0E7C86; letter-spacing: 2px; margin: 0 0 20px 0; font-size: 0.85rem; text-transform:uppercase;'>
-            ⚙️ INTELLIGENCE FILTERS
+    <div class="filter-header-container">
+        <div class="filter-title">
+            <span>⚙️</span> INTELLIGENCE FILTERS
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-selected_leagues = st.sidebar.multiselect("COMPETITION", options=all_leagues, default=all_leagues, key="leagues_filter")
-selected_seasons = st.sidebar.multiselect("SEASON", options=all_seasons, default=[all_seasons[-1]], key="seasons_filter")
-selected_teams   = st.sidebar.multiselect("CLUB ROSTER", options=all_teams, default=None, key="teams_filter")
-st.sidebar.markdown("<hr style='margin: 20px 0; border-color: #145D6D;'>", unsafe_allow_html=True)
+col1, col2, col3 = st.sidebar.columns(3)
+
+with col1:
+    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>🏆</span> COMPETITION</div></div>""", unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>📅</span> SEASON</div></div>""", unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""<div class="filter-card"><div class="filter-card-label"><span>🏢</span> CLUB ROSTER</div></div>""", unsafe_allow_html=True)
+
+st.sidebar.markdown("""""", unsafe_allow_html=True)
+
+selected_leagues = st.sidebar.multiselect("", options=all_leagues, default=all_leagues, key="leagues_filter", label_visibility="collapsed")
+selected_seasons = st.sidebar.multiselect("", options=all_seasons, default=[all_seasons[-1]], key="seasons_filter", label_visibility="collapsed")
+selected_teams   = st.sidebar.multiselect("", options=all_teams, default=None, key="teams_filter", label_visibility="collapsed")
+
+st.sidebar.markdown("""<div class="filter-divider"></div>""", unsafe_allow_html=True)
 
 filtered_df = raw_df[(raw_df['league_name'].isin(selected_leagues)) & (raw_df['season_year'].isin(selected_seasons))]
 if selected_teams:
@@ -479,41 +648,36 @@ player_agg_df   = aggregate_player_stats(filtered_df)
 gk_agg_df       = player_agg_df[player_agg_df['is_gk'] == 1]
 outfield_agg_df = player_agg_df[player_agg_df['is_gk'] == 0]
 
-st.sidebar.markdown("""
-    <div style='background: linear-gradient(135deg, #0D1C25 0%, #132733 100%);
-                padding: 18px; border: 1px solid var(--accent-primary);
-                border-left: 4px solid #00D9FF; font-family: Inter, sans-serif; border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(14,124,134,0.15);'>
-        <div style='font-family: Inter; font-weight:700; color: #00D9FF; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 14px; text-transform: uppercase;'>
-            📊 DATA VOLUME
-        </div>
-        <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 12px;'>
-            <div style='background: rgba(0,217,255,0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(0,217,255,0.2);'>
-                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Records</span>
-                <span style='color: #00D9FF; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+st.sidebar.markdown(f"""
+    <div class="data-summary-enhanced">
+        <div class="data-summary-title">📊 DATA VOLUME</div>
+        <div class="data-metrics-grid">
+            <div class="metric-cell metric-records">
+                <span class="metric-label">📋 Records</span>
+                <span class="metric-value">{len(filtered_df)}</span>
             </div>
-            <div style='background: rgba(0,255,136,0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(0,255,136,0.2);'>
-                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Players</span>
-                <span style='color: #00FF88; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            <div class="metric-cell metric-players">
+                <span class="metric-label">👥 Players</span>
+                <span class="metric-value">{len(player_agg_df)}</span>
             </div>
-            <div style='background: rgba(255,183,0,0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(255,183,0,0.2);'>
-                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Competitions</span>
-                <span style='color: #FFB700; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            <div class="metric-cell metric-competitions">
+                <span class="metric-label">⚡ Competitions</span>
+                <span class="metric-value">{len(selected_leagues)}</span>
             </div>
-            <div style='background: rgba(126,91,239,0.08); padding: 10px; border-radius: 4px; border: 1px solid rgba(126,91,239,0.2);'>
-                <span style='color: var(--text-secondary); font-size: 0.7rem; font-family: JetBrains Mono; text-transform: uppercase; display: block; margin-bottom: 4px;'>Seasons</span>
-                <span style='color: #7E5BEF; font-family: JetBrains Mono; font-weight: 700; font-size: 1.3rem;'>{}</span>
+            <div class="metric-cell metric-seasons">
+                <span class="metric-label">🗓️ Seasons</span>
+                <span class="metric-value">{len(selected_seasons)}</span>
             </div>
         </div>
     </div>
-""".format(len(filtered_df), len(player_agg_df), len(selected_leagues), len(selected_seasons)), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════
 # HERO BANNER
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
     <div style="background-color: #030B12; padding: 40px 30px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 40px; border-radius: 4px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.4 FIXED</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.5 FILTER REDESIGN</div>
         <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 4rem; font-weight: 400; letter-spacing: 3px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
         <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #63AEB5; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
             <span>[+] Elite Global Leagues</span>
@@ -618,7 +782,7 @@ with tab1:
         st.info("NO ACTIVE GOALKEEPER DATA IN THIS FILTER RANGE.")
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 2: CLUB TACTICAL PROFILES  — radars stacked vertically
+# TAB 2: CLUB TACTICAL PROFILES
 # ═══════════════════════════════════════════════════════════════
 with tab2:
     selected_team_tab2 = st.selectbox(
@@ -771,7 +935,6 @@ with tab3:
         is_p2_gk = p2_data['is_gk']
 
         if not is_p1_gk and not is_p2_gk:
-            # ── OFFENSE ─────────────────────────────
             st.markdown("<p class='section-label'>// OFFENSE</p>", unsafe_allow_html=True)
             attacking_metrics = {
                 'Goals Registered':    (int(p1_data['goals']),           int(p2_data['goals'])),
@@ -787,7 +950,6 @@ with tab3:
             st.markdown(df_to_plain_table(att_cmp_df), unsafe_allow_html=True)
             st.markdown("---")
 
-            # ── PLAYMAKING AUDIT ─────────────────────────────────
             st.markdown("<p class='section-label'>// PLAYMAKING AUDIT</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -832,7 +994,6 @@ with tab3:
                 st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PLAYMAKING MATRIX"), use_container_width=True)
             st.markdown("---")
 
-# ── PASSING PROFILE ─────────────────────────────
             st.markdown("<p class='section-label'>// PASSING PROFILE</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -872,7 +1033,6 @@ with tab3:
                 st.plotly_chart(apply_sofascore_radar_layout(fig_passing, "PASSING PROFILE RADAR"), use_container_width=True)
             st.markdown("---")
 
-            # ── DEFENSIVE ACTIONS ─────────────────────────────────
             st.markdown("<p class='section-label'>// DEFENSIVE ACTIONS</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -960,6 +1120,6 @@ with tab3:
 st.markdown("""
     <div style='text-align: center; color: var(--text-muted); margin-top: 50px; padding: 20px; font-family: JetBrains Mono, monospace; font-size: 0.75rem; border-top: 1px solid #145D6D;'>
         <span style='color: var(--accent-primary); font-weight: 700; letter-spacing: 2px;'>EUROPEAN FOOTBALL ANALYTICS HUB</span><br>
-        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & SEASON LEVEL ANALYSIS | FILTER TEXT RENDERING FIXED (V3.4)</div>
+        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE | V3.5 FILTER REDESIGN COMPLETE</div>
     </div>
 """, unsafe_allow_html=True)
