@@ -237,13 +237,21 @@ def load_and_preprocess_data():
     try:
         url = "https://raw.githubusercontent.com/Armaan7781/FootballAnalyticsApp/main/Historical%20Data.csv"
         df = pd.read_csv(url).fillna(0)
+        
+        # Normalize text to remove special characters
         df['player'] = df['player'].apply(
             lambda name: ''.join(
                 c for c in unicodedata.normalize('NFD', str(name))
                 if unicodedata.category(c) != 'Mn'
             )
         )
+        
+        # FIX: Append team name to player name to create a unique identifier
+        df['player'] = df['player'] + ' (' + df['team'] + ')'
+        
+        # Identify goalkeepers
         df['is_gk'] = (df['saves'] > 0) | (df['savesParried'] > 0) | (df['punches'] > 0) | (df['highClaims'] > 0)
+        
         return df
     except Exception as e:
         st.error(f"Error loading data: {e}")
