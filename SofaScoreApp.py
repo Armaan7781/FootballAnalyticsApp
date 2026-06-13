@@ -238,9 +238,20 @@ def aggregate_player_stats(df):
     # IMPROVED BIG CHANCE CONVERSION LOGIC
     # Only calculate for players with at least 10 goals
     # ═══════════════════════════════════════════════════════════
+    # 1. Get the 10th highest goal count (or inf if fewer than 10 players)
+    if len(agg_df) >= 10:
+        top_10_threshold = agg_df['goals'].nlargest(10).iloc[-1]
+    else:
+        top_10_threshold = float('inf')  # Or a value that results in no one meeting the criteria
+
+    # 2. Update the logic to use this threshold
     agg_df['goal_conversion'] = np.where(
-        (agg_df['goals'] >= 50),
-        np.clip((agg_df['goals'] / agg_df['totalShots']) * 100, 0, 100),
+        agg_df['totalShots'] > 0,
+        np.where(
+            agg_df['goals'] >= top_10_threshold,
+            np.clip((agg_df['goals'] / agg_df['totalShots']) * 100, 0, 100),
+            0
+        ),
         0
     )
     
@@ -1008,3 +1019,4 @@ st.markdown("""
         <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & MACRO SEASON AUDITING</div>
     </div>
 """, unsafe_allow_html=True)
+
