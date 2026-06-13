@@ -515,7 +515,7 @@ with tab1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'totalShots', 'player', "SHOT VOLUME"), use_container_width=True)
     with col2:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'expectedGoals', 'player', "EXPECTED GOALS (xG)"), use_container_width=True)
-        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Goal CONVERSION %"), use_container_width=True)
+        st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'goal_conversion', 'player', "Goal CONVERSION %(Amongst top 10 goal scorers"), use_container_width=True)
         
     st.markdown("---")
     
