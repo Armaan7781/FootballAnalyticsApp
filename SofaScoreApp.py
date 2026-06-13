@@ -80,7 +80,10 @@ st.markdown("""
             font-family: 'Inter', sans-serif !important;
         }
         li[role="option"]:hover { background-color: rgba(14, 124, 134, 0.2) !important; }
-        span[data-baseweb="tag"] {
+        span[data-baseweb="tag"]
+        span[data-baseweb="tag"] * {
+    background-color: transparent !important;
+}{
             background-color: rgba(14, 124, 134, 0.3) !important;
             color: var(--accent-secondary) !important;
             border: 1px solid var(--accent-primary) !important;
