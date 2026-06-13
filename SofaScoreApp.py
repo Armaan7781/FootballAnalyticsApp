@@ -60,11 +60,20 @@ st.markdown("""
         /* ── CUSTOM DROPDOWN STYLES ── */
         div[data-baseweb="select"] > div,
         div[data-baseweb="popover"] > div {
-            background-color: var(--bg-card) !important; /* Solid background prevents weird overlaps */
+            background-color: var(--bg-card) !important;
             border: 1px solid var(--accent-muted) !important;
             color: var(--text-primary) !important;
             border-radius: 10px !important;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+        /* FIX: Ensure select input and spans have proper text color */
+        div[data-baseweb="select"] input,
+        div[data-baseweb="select"] span {
+            color: var(--text-primary) !important;
+            background-color: transparent !important;
+        }
+        div[data-baseweb="select"] input::placeholder {
+            color: var(--text-secondary) !important;
         }
         li[role="option"] {
             background-color: transparent !important;
@@ -504,7 +513,7 @@ st.sidebar.markdown("""
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
     <div style="background-color: #030B12; padding: 40px 30px; border: 1px solid #145D6D; border-left: 6px solid #0E7C86; margin-bottom: 40px; border-radius: 4px;">
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.3</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6C8594; letter-spacing: 2px; margin-bottom: 10px;">PRO-LEVEL SCOUTING SUITE // V.3.4 FIXED</div>
         <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 4rem; font-weight: 400; letter-spacing: 3px; color: #F5F7FA; margin: 0 0 10px 0; line-height: 1;">EUROPEAN FOOTBALL ANALYTICS HUB</h1>
         <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #63AEB5; font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
             <span>[+] Elite Global Leagues</span>
@@ -951,6 +960,6 @@ with tab3:
 st.markdown("""
     <div style='text-align: center; color: var(--text-muted); margin-top: 50px; padding: 20px; font-family: JetBrains Mono, monospace; font-size: 0.75rem; border-top: 1px solid #145D6D;'>
         <span style='color: var(--accent-primary); font-weight: 700; letter-spacing: 2px;'>EUROPEAN FOOTBALL ANALYTICS HUB</span><br>
-        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & SEASON LEVEL ANALYSIS</div>
+        <div style='margin-top: 10px; color: #6C8594;'>TACTICAL RECRUITMENT INTELLIGENCE & SEASON LEVEL ANALYSIS | FILTER TEXT RENDERING FIXED (V3.4)</div>
     </div>
 """, unsafe_allow_html=True)
