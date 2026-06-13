@@ -236,11 +236,10 @@ def aggregate_player_stats(df):
     
     # ═══════════════════════════════════════════════════════════
     # IMPROVED BIG CHANCE CONVERSION LOGIC
-    # Only calculate for players with meaningful sample size (25th percentile)
+    # Only calculate for players with at least 10 goals
     # ═══════════════════════════════════════════════════════════
-    min_matches_threshold = agg_df['matches_played'].quantile(0.25)
     agg_df['big_chance_conv'] = np.where(
-        (agg_df['bigChancesCreated'] > 0) & (agg_df['matches_played'] >= min_matches_threshold),
+        (agg_df['bigChancesCreated'] > 0) & (agg_df['goals'] >= 10),
         np.clip((agg_df['goals'] / agg_df['bigChancesCreated']) * 100, 0, 100),
         0
     )
@@ -516,32 +515,35 @@ with tab1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'bigChancesCreated', 'player', "BIG CHANCES CREATED"), use_container_width=True)
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'successfulDribbles', 'player', "SUCCESSFUL TAKE-ONS (DRIBBLES)"), use_container_width=True)
     with col2:
+        # UPDATED PLAYMAKING RADAR with new metrics
         top_creators_df = outfield_agg_df.nlargest(5, 'bigChancesCreated')
-        max_ap = max(top_creators_df['accuratePasses'].max(), 1)
-        max_t = max(top_creators_df['touches'].max(), 1)
-        max_alb = max(top_creators_df['accurateLongBalls'].max() if 'accurateLongBalls' in top_creators_df.columns else 1, 1)
         max_bcc = max(top_creators_df['bigChancesCreated'].max(), 1)
-        max_kp = max(top_creators_df['keyPasses'].max(), 1)
+        max_drb = max(top_creators_df['successfulDribbles'].max(), 1)
+        max_pf3 = max(top_creators_df['passesInFinal3rd'].max() if 'passesInFinal3rd' in top_creators_df.columns else 1, 1)
+        max_pob = max(top_creators_df['passesInOppBox'].max() if 'passesInOppBox' in top_creators_df.columns else 1, 1)
+        max_foul = max(top_creators_df['wasFouled'].max() if 'wasFouled' in top_creators_df.columns else 1, 1)
         
         fig_pm_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_creators_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            alb = p_row['accurateLongBalls'] if 'accurateLongBalls' in p_row else 0
+            pf3 = p_row['passesInFinal3rd'] if 'passesInFinal3rd' in p_row else 0
+            pob = p_row['passesInOppBox'] if 'passesInOppBox' in p_row else 0
+            foul = p_row['wasFouled'] if 'wasFouled' in p_row else 0
             fig_pm_radar.add_trace(go.Scatterpolar(
                 r=[
-                    (p_row['accuratePasses'] / max_ap * 100) if max_ap > 0 else 0,
-                    (p_row['touches'] / max_t * 100) if max_t > 0 else 0,
-                    (alb / max_alb * 100) if max_alb > 0 else 0,
                     (p_row['bigChancesCreated'] / max_bcc * 100) if max_bcc > 0 else 0,
-                    (p_row['keyPasses'] / max_kp * 100) if max_kp > 0 else 0
+                    (p_row['successfulDribbles'] / max_drb * 100) if max_drb > 0 else 0,
+                    (pf3 / max_pf3 * 100) if max_pf3 > 0 else 0,
+                    (pob / max_pob * 100) if max_pob > 0 else 0,
+                    (foul / max_foul * 100) if max_foul > 0 else 0
                 ],
-                theta=['Accurate Passes', 'Touches', 'Accurate Long Balls', 'Big Chances', 'Key Passes'],
+                theta=['Big Chances', 'Dribbles', 'Passes Final 3rd', 'Passes Opp Box', 'Was Fouled'],
                 fill='toself',
                 name=p_row['player'],
                 line=dict(color=color, width=3),
                 fillcolor=hex_to_rgba(color, 0.2)
             ))
-        st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "PASSING MATRIX"), use_container_width=True)
+        st.plotly_chart(apply_sofascore_radar_layout(fig_pm_radar, "PLAYMAKING MATRIX"), use_container_width=True)
         
     st.markdown("---")
     
@@ -562,17 +564,18 @@ with tab1:
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'interceptions', 'player', "INTERCEPTIONS"), use_container_width=True)
         st.plotly_chart(create_ranked_scouting_bar(outfield_agg_df, 'aerialDuelsWon', 'player', "AERIAL DUELS WON"), use_container_width=True)
     with col2:
+        # UPDATED DEFENSIVE RADAR with ballrecovery
         top_defenders_df = outfield_agg_df.nlargest(5, 'tackles')
         max_tck = max(top_defenders_df['tackles'].max(), 1)
         max_int = max(top_defenders_df['interceptions'].max(), 1)
         max_aer = max(top_defenders_df['aerialDuelsWon'].max(), 1)
         max_grd = max(top_defenders_df['groundDuelsWon'].max(), 1)
-        max_rec = max(top_defenders_df['recoveries'].max() if 'recoveries' in top_defenders_df.columns else 1, 1)
+        max_rec = max(top_defenders_df['ballrecovery'].max() if 'ballrecovery' in top_defenders_df.columns else 1, 1)
         
         fig_def_radar = go.Figure()
         for idx, (_, p_row) in enumerate(top_defenders_df.iterrows()):
             color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-            rec = p_row['recoveries'] if 'recoveries' in p_row else 0
+            rec = p_row['ballrecovery'] if 'ballrecovery' in p_row else 0
             fig_def_radar.add_trace(go.Scatterpolar(
                 r=[
                     (p_row['tackles'] / max_tck * 100) if max_tck > 0 else 0,
@@ -581,7 +584,7 @@ with tab1:
                     (p_row['groundDuelsWon'] / max_grd * 100) if max_grd > 0 else 0,
                     (rec / max_rec * 100) if max_rec > 0 else 0
                 ],
-                theta=['Tackles Won', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Recoveries'],
+                theta=['Tackles Won', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Ball Recovery'],
                 fill='toself',
                 name=p_row['player'],
                 line=dict(color=color, width=3),
@@ -627,52 +630,91 @@ with tab2:
         st.markdown("---")
         st.markdown("<div class='tactical-header'>TEAM RADAR DOSSIERS (TOP 5 TEAMS BY METRIC)</div>", unsafe_allow_html=True)
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
-            top_creative_teams = team_agg.nlargest(5, 'bigChancesCreated')
-            max_bcc_t = max(top_creative_teams['bigChancesCreated'].max(), 1)
-            max_kp_t = max(top_creative_teams['keyPasses'].max(), 1)
-            max_drb_t = max(top_creative_teams['successfulDribbles'].max(), 1)
+            # UPDATED PASSING RADAR - Accurate passes, touches, accurate long balls, big chances created, key passes
+            top_passing_teams = team_agg.nlargest(5, 'accuratePasses')
+            max_ap = max(top_passing_teams['accuratePasses'].max(), 1)
+            max_t = max(top_passing_teams['touches'].max(), 1)
+            max_alb = max(top_passing_teams['accurateLongBalls'].max() if 'accurateLongBalls' in top_passing_teams.columns else 1, 1)
+            max_bcc_t = max(top_passing_teams['bigChancesCreated'].max(), 1)
+            max_kp_t = max(top_passing_teams['keyPasses'].max(), 1)
             
-            fig_team_pm = go.Figure()
-            for idx, (_, t_row) in enumerate(top_creative_teams.iterrows()):
+            fig_team_pass = go.Figure()
+            for idx, (_, t_row) in enumerate(top_passing_teams.iterrows()):
                 color = RADAR_COLORS[idx % len(RADAR_COLORS)]
-                fig_team_pm.add_trace(go.Scatterpolar(
+                alb = t_row['accurateLongBalls'] if 'accurateLongBalls' in t_row else 0
+                fig_team_pass.add_trace(go.Scatterpolar(
                     r=[
+                        (t_row['accuratePasses'] / max_ap * 100) if max_ap > 0 else 0,
+                        (t_row['touches'] / max_t * 100) if max_t > 0 else 0,
+                        (alb / max_alb * 100) if max_alb > 0 else 0,
                         (t_row['bigChancesCreated'] / max_bcc_t * 100) if max_bcc_t > 0 else 0,
-                        (t_row['keyPasses'] / max_kp_t * 100) if max_kp_t > 0 else 0,
-                        (t_row['successfulDribbles'] / max_drb_t * 100) if max_drb_t > 0 else 0
+                        (t_row['keyPasses'] / max_kp_t * 100) if max_kp_t > 0 else 0
                     ],
-                    theta=['BCC', 'Key Passes', 'Dribbles'],
+                    theta=['Accurate Passes', 'Touches', 'Long Balls', 'BCC', 'Key Passes'],
                     fill='toself',
                     name=t_row['team'],
                     line=dict(color=color, width=3),
                     fillcolor=hex_to_rgba(color, 0.2)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pm, "ELITE CREATIVE TEAMS MATRIX"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_pass, "PASSING TEAMS MATRIX"), use_container_width=True)
             
         with col2:
+            # UPDATED DEFENSIVE RADAR - Tackles won, interceptions, aerial duels, ground duels, recoveries
             top_def_teams = team_agg.nlargest(5, 'tackles')
             max_tck_t = max(top_def_teams['tackles'].max(), 1)
             max_int_t = max(top_def_teams['interceptions'].max(), 1)
             max_aer_t = max(top_def_teams['aerialDuelsWon'].max(), 1)
+            max_grd_t = max(top_def_teams['groundDuelsWon'].max(), 1)
+            max_rec_t = max(top_def_teams['ballrecovery'].max() if 'ballrecovery' in top_def_teams.columns else 1, 1)
             
             fig_team_def = go.Figure()
             for idx, (_, t_row) in enumerate(top_def_teams.iterrows()):
                 color = RADAR_COLORS[idx % len(RADAR_COLORS)]
+                rec = t_row['ballrecovery'] if 'ballrecovery' in t_row else 0
                 fig_team_def.add_trace(go.Scatterpolar(
                     r=[
                         (t_row['tackles'] / max_tck_t * 100) if max_tck_t > 0 else 0,
                         (t_row['interceptions'] / max_int_t * 100) if max_int_t > 0 else 0,
-                        (t_row['aerialDuelsWon'] / max_aer_t * 100) if max_aer_t > 0 else 0
+                        (t_row['aerialDuelsWon'] / max_aer_t * 100) if max_aer_t > 0 else 0,
+                        (t_row['groundDuelsWon'] / max_grd_t * 100) if max_grd_t > 0 else 0,
+                        (rec / max_rec_t * 100) if max_rec_t > 0 else 0
                     ],
-                    theta=['Tackles Won', 'Interceptions', 'Aerial Duels'],
+                    theta=['Tackles Won', 'Interceptions', 'Aerial Duels', 'Ground Duels', 'Ball Recovery'],
                     fill='toself',
                     name=t_row['team'],
                     line=dict(color=color, width=3),
                     fillcolor=hex_to_rgba(color, 0.2)
                 ))
-            st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "ELITE DEFENSIVE TEAMS MATRIX"), use_container_width=True)
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_def, "DEFENSIVE TEAMS MATRIX"), use_container_width=True)
+
+        with col3:
+            # UPDATED GK RADAR - Saves, clean sheets, accurate long balls, errors led to goal
+            top_gk_teams = team_agg.nlargest(5, 'saves')
+            max_sv = max(top_gk_teams['saves'].max(), 1)
+            max_cs = max(top_gk_teams['cleanSheet'].max(), 1)
+            max_alb_gk = max(top_gk_teams['accurateLongBalls'].max() if 'accurateLongBalls' in top_gk_teams.columns else 1, 1)
+            max_err = max(top_gk_teams['errorLeadToGoal'].max(), 1)
+            
+            fig_team_gk = go.Figure()
+            for idx, (_, t_row) in enumerate(top_gk_teams.iterrows()):
+                color = RADAR_COLORS[idx % len(RADAR_COLORS)]
+                alb_gk = t_row['accurateLongBalls'] if 'accurateLongBalls' in t_row else 0
+                fig_team_gk.add_trace(go.Scatterpolar(
+                    r=[
+                        (t_row['saves'] / max_sv * 100) if max_sv > 0 else 0,
+                        (t_row['cleanSheet'] / max_cs * 100) if max_cs > 0 else 0,
+                        (alb_gk / max_alb_gk * 100) if max_alb_gk > 0 else 0,
+                        ((max_err - t_row['errorLeadToGoal']) / max_err * 100) if max_err > 0 else 0
+                    ],
+                    theta=['Saves', 'Clean Sheets', 'Long Balls', 'Error Avoidance'],
+                    fill='toself',
+                    name=t_row['team'],
+                    line=dict(color=color, width=3),
+                    fillcolor=hex_to_rgba(color, 0.2)
+                ))
+            st.plotly_chart(apply_sofascore_radar_layout(fig_team_gk, "GOALKEEPER TEAMS MATRIX"), use_container_width=True)
 
     else:
         team_df = player_agg_df[player_agg_df['team'] == selected_team_tab2]
@@ -770,55 +812,49 @@ with tab3:
             
             st.markdown("---")
             
-            st.markdown("<p style='font-family: Bebas Neue; color: #F5F7FA; font-size: 1.4rem; letter-spacing: 2px; border-bottom: 1px solid #145D6D; padding-bottom: 5px;'>// PROGRESSION & DISTRIBUTION AUDIT</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-family: Bebas Neue; color: #F5F7FA; font-size: 1.4rem; letter-spacing: 2px; border-bottom: 1px solid #145D6D; padding-bottom: 5px;'>// PLAYMAKING AUDIT</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
-                passing_metrics = {
+                playmaking_metrics = {
                     'Big Chances Created': (int(p1_data['bigChancesCreated']), int(p2_data['bigChancesCreated'])),
-                    'Key Passes': (int(p1_data['keyPasses']), int(p2_data['keyPasses'])),
-                    'Successful Take-ons': (int(p1_data['successfulDribbles']), int(p2_data['successfulDribbles'])),
+                    'Dribbles (Successful)': (int(p1_data['successfulDribbles']), int(p2_data['successfulDribbles'])),
+                    'Passes in Final 3rd': (int(p1_data['passesInFinal3rd']) if 'passesInFinal3rd' in p1_data else 0, int(p2_data['passesInFinal3rd']) if 'passesInFinal3rd' in p2_data else 0),
+                    'Passes in Opp Box': (int(p1_data['passesInOppBox']) if 'passesInOppBox' in p1_data else 0, int(p2_data['passesInOppBox']) if 'passesInOppBox' in p2_data else 0),
+                    'Times Fouled': (int(p1_data['wasFouled']) if 'wasFouled' in p1_data else 0, int(p2_data['wasFouled']) if 'wasFouled' in p2_data else 0),
                 }
-                passing_df = pd.DataFrame({
-                    'Creative Output': list(passing_metrics.keys()),
-                    player1: [v[0] for v in passing_metrics.values()],
-                    player2: [v[1] for v in passing_metrics.values()]
+                playmaking_df = pd.DataFrame({
+                    'Playmaking Metric': list(playmaking_metrics.keys()),
+                    player1: [v[0] for v in playmaking_metrics.values()],
+                    player2: [v[1] for v in playmaking_metrics.values()]
                 })
-                st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.8rem; color: #0E7C86; font-weight: 700;'>CREATION METRICS</p>", unsafe_allow_html=True)
-                st.dataframe(passing_df, use_container_width=True, hide_index=True)
-                
-                passing_acc_metrics = {
-                    'Completed Passes': (int(p1_data['accuratePasses']), int(p2_data['accuratePasses'])),
-                    'Touch Volume': (int(p1_data['touches']), int(p2_data['touches'])),
-                    'Pass Completion %': (round(p1_data['accuratePassesPercentage'], 1), round(p2_data['accuratePassesPercentage'], 1)),
-                }
-                passing_acc_df = pd.DataFrame({
-                    'Ball Retention': list(passing_acc_metrics.keys()),
-                    player1: [v[0] for v in passing_acc_metrics.values()],
-                    player2: [v[1] for v in passing_acc_metrics.values()]
-                })
-                st.markdown("<br><p style='font-family: JetBrains Mono; font-size: 0.8rem; color: #0E7C86; font-weight: 700;'>DISTRIBUTION METRICS</p>", unsafe_allow_html=True)
-                st.dataframe(passing_acc_df, use_container_width=True, hide_index=True)
+                st.markdown("<p style='font-family: JetBrains Mono; font-size: 0.8rem; color: #0E7C86; font-weight: 700;'>PLAYMAKING OUTPUT</p>", unsafe_allow_html=True)
+                st.dataframe(playmaking_df, use_container_width=True, hide_index=True)
                 
             with col2:
-                max_ap = max(p1_data['accuratePasses'], p2_data['accuratePasses'], 1)
-                max_t = max(p1_data['touches'], p2_data['touches'], 1)
-                max_alb = max(p1_data['accurateLongBalls'] if 'accurateLongBalls' in p1_data else 0, p2_data['accurateLongBalls'] if 'accurateLongBalls' in p2_data else 0, 1)
+                # UPDATED PLAYMAKING RADAR
                 max_bcc = max(p1_data['bigChancesCreated'], p2_data['bigChancesCreated'], 1)
-                max_kp = max(p1_data['keyPasses'], p2_data['keyPasses'], 1)
+                max_drb = max(p1_data['successfulDribbles'], p2_data['successfulDribbles'], 1)
+                max_pf3 = max(p1_data['passesInFinal3rd'] if 'passesInFinal3rd' in p1_data else 0, p2_data['passesInFinal3rd'] if 'passesInFinal3rd' in p2_data else 0, 1)
+                max_pob = max(p1_data['passesInOppBox'] if 'passesInOppBox' in p1_data else 0, p2_data['passesInOppBox'] if 'passesInOppBox' in p2_data else 0, 1)
+                max_foul = max(p1_data['wasFouled'] if 'wasFouled' in p1_data else 0, p2_data['wasFouled'] if 'wasFouled' in p2_data else 0, 1)
                 
-                p1_alb = p1_data['accurateLongBalls'] if 'accurateLongBalls' in p1_data else 0
-                p2_alb = p2_data['accurateLongBalls'] if 'accurateLongBalls' in p2_data else 0
+                p1_pf3 = p1_data['passesInFinal3rd'] if 'passesInFinal3rd' in p1_data else 0
+                p2_pf3 = p2_data['passesInFinal3rd'] if 'passesInFinal3rd' in p2_data else 0
+                p1_pob = p1_data['passesInOppBox'] if 'passesInOppBox' in p1_data else 0
+                p2_pob = p2_data['passesInOppBox'] if 'passesInOppBox' in p2_data else 0
+                p1_foul = p1_data['wasFouled'] if 'wasFouled' in p1_data else 0
+                p2_foul = p2_data['wasFouled'] if 'wasFouled' in p2_data else 0
                 
                 fig_playmaking = go.Figure()
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[
-                        (p1_data['accuratePasses'] / max_ap * 100) if max_ap > 0 else 0,
-                        (p1_data['touches'] / max_t * 100) if max_t > 0 else 0,
-                        (p1_alb / max_alb * 100) if max_alb > 0 else 0,
                         (p1_data['bigChancesCreated'] / max_bcc * 100) if max_bcc > 0 else 0,
-                        (p1_data['keyPasses'] / max_kp * 100) if max_kp > 0 else 0
+                        (p1_data['successfulDribbles'] / max_drb * 100) if max_drb > 0 else 0,
+                        (p1_pf3 / max_pf3 * 100) if max_pf3 > 0 else 0,
+                        (p1_pob / max_pob * 100) if max_pob > 0 else 0,
+                        (p1_foul / max_foul * 100) if max_foul > 0 else 0
                     ],
-                    theta=['Accurate Passes', 'Touches', 'Long Balls', 'Big Chances', 'Key Passes'],
+                    theta=['Big Chances', 'Dribbles', 'Final 3rd Passes', 'Opp Box Passes', 'Was Fouled'],
                     fill='toself',
                     name=player1,
                     line=dict(color='#00D9FF', width=3),
@@ -826,31 +862,33 @@ with tab3:
                 ))
                 fig_playmaking.add_trace(go.Scatterpolar(
                     r=[
-                        (p2_data['accuratePasses'] / max_ap * 100) if max_ap > 0 else 0,
-                        (p2_data['touches'] / max_t * 100) if max_t > 0 else 0,
-                        (p2_alb / max_alb * 100) if max_alb > 0 else 0,
                         (p2_data['bigChancesCreated'] / max_bcc * 100) if max_bcc > 0 else 0,
-                        (p2_data['keyPasses'] / max_kp * 100) if max_kp > 0 else 0
+                        (p2_data['successfulDribbles'] / max_drb * 100) if max_drb > 0 else 0,
+                        (p2_pf3 / max_pf3 * 100) if max_pf3 > 0 else 0,
+                        (p2_pob / max_pob * 100) if max_pob > 0 else 0,
+                        (p2_foul / max_foul * 100) if max_foul > 0 else 0
                     ],
-                    theta=['Accurate Passes', 'Touches', 'Long Balls', 'Big Chances', 'Key Passes'],
+                    theta=['Big Chances', 'Dribbles', 'Final 3rd Passes', 'Opp Box Passes', 'Was Fouled'],
                     fill='toself',
                     name=player2,
                     line=dict(color='#00FF88', width=3),
                     fillcolor=hex_to_rgba('#00FF88', 0.2)
                 ))
-                st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PASSING MATRIX RADAR"), use_container_width=True)
+                st.plotly_chart(apply_sofascore_radar_layout(fig_playmaking, "PLAYMAKING MATRIX RADAR"), use_container_width=True)
             
             st.markdown("---")
             
             st.markdown("<p style='font-family: Bebas Neue; color: #F5F7FA; font-size: 1.4rem; letter-spacing: 2px; border-bottom: 1px solid #145D6D; padding-bottom: 5px;'>// DEFENSIVE ACTIONS</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
+                rec1 = p1_data['ballrecovery'] if 'ballrecovery' in p1_data else 0
+                rec2 = p2_data['ballrecovery'] if 'ballrecovery' in p2_data else 0
                 defence_metrics = {
                     'Tackles Won': (int(p1_data['tackles']), int(p2_data['tackles'])),
                     'Interceptions': (int(p1_data['interceptions']), int(p2_data['interceptions'])),
                     'Aerial Duels Won': (int(p1_data['aerialDuelsWon']), int(p2_data['aerialDuelsWon'])),
                     'Ground Duels Won': (int(p1_data['groundDuelsWon']), int(p2_data['groundDuelsWon'])),
-                    'Recoveries': (int(p1_data['recoveries']) if 'recoveries' in p1_data else 0, int(p2_data['recoveries']) if 'recoveries' in p2_data else 0),
+                    'Ball Recovery': (int(rec1), int(rec2)),
                 }
                 defence_df = pd.DataFrame({
                     'Defensive Action': list(defence_metrics.keys()),
@@ -865,10 +903,7 @@ with tab3:
                 max_int = max(p1_data['interceptions'], p2_data['interceptions'], 1)
                 max_aer = max(p1_data['aerialDuelsWon'], p2_data['aerialDuelsWon'], 1)
                 max_grd = max(p1_data['groundDuelsWon'], p2_data['groundDuelsWon'], 1)
-                max_rec = max(p1_data['recoveries'] if 'recoveries' in p1_data else 0, p2_data['recoveries'] if 'recoveries' in p2_data else 0, 1)
-                
-                p1_rec = p1_data['recoveries'] if 'recoveries' in p1_data else 0
-                p2_rec = p2_data['recoveries'] if 'recoveries' in p2_data else 0
+                max_rec = max(rec1, rec2, 1)
                 
                 fig_defence = go.Figure()
                 fig_defence.add_trace(go.Scatterpolar(
@@ -877,9 +912,9 @@ with tab3:
                         (p1_data['interceptions'] / max_int * 100) if max_int > 0 else 0,
                         (p1_data['aerialDuelsWon'] / max_aer * 100) if max_aer > 0 else 0,
                         (p1_data['groundDuelsWon'] / max_grd * 100) if max_grd > 0 else 0,
-                        (p1_rec / max_rec * 100) if max_rec > 0 else 0
+                        (rec1 / max_rec * 100) if max_rec > 0 else 0
                     ],
-                    theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Recoveries'],
+                    theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Ball Recovery'],
                     fill='toself',
                     name=player1,
                     line=dict(color='#00D9FF', width=3),
@@ -891,9 +926,9 @@ with tab3:
                         (p2_data['interceptions'] / max_int * 100) if max_int > 0 else 0,
                         (p2_data['aerialDuelsWon'] / max_aer * 100) if max_aer > 0 else 0,
                         (p2_data['groundDuelsWon'] / max_grd * 100) if max_grd > 0 else 0,
-                        (p2_rec / max_rec * 100) if max_rec > 0 else 0
+                        (rec2 / max_rec * 100) if max_rec > 0 else 0
                     ],
-                    theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Recoveries'],
+                    theta=['Tackles', 'Interceptions', 'Aerials', 'Ground Duels', 'Ball Recovery'],
                     fill='toself',
                     name=player2,
                     line=dict(color='#00FF88', width=3),
@@ -902,7 +937,7 @@ with tab3:
                 st.plotly_chart(apply_sofascore_radar_layout(fig_defence, "DEFENSIVE MATRIX RADAR"), use_container_width=True)
 
         elif is_p1_gk and is_p2_gk:
-            # BOTH ARE GOALKEEPERS
+            # BOTH ARE GOALKEEPERS - UPDATED WITH NEW METRICS
             st.markdown("<p style='font-family: Bebas Neue; color: #F5F7FA; font-size: 1.4rem; letter-spacing: 2px; border-bottom: 1px solid #145D6D; padding-bottom: 5px;'>// SHOT STOPPING DOSSIER</p>", unsafe_allow_html=True)
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -911,9 +946,8 @@ with tab3:
                 gk_metrics = {
                     'Total Saves': (int(p1_data['saves']), int(p2_data['saves'])),
                     'Clean Sheets': (int(p1_data['cleanSheet']), int(p2_data['cleanSheet'])),
-                    'High Claims': (int(p1_data['highClaims']), int(p2_data['highClaims'])),
                     'Accurate Long Balls': (int(alb1), int(alb2)),
-                    'Errors to Goals': (int(p1_data['errorLeadToGoal']), int(p2_data['errorLeadToGoal'])),
+                    'Errors Led To Goal': (int(p1_data['errorLeadToGoal']), int(p2_data['errorLeadToGoal'])),
                 }
                 gk_df = pd.DataFrame({
                     'Goalkeeper Metric': list(gk_metrics.keys()),
@@ -926,7 +960,6 @@ with tab3:
             with col2:
                 max_sv = max(p1_data['saves'], p2_data['saves'], 1)
                 max_cs = max(p1_data['cleanSheet'], p2_data['cleanSheet'], 1)
-                max_hc = max(p1_data['highClaims'], p2_data['highClaims'], 1)
                 max_alb = max(alb1, alb2, 1)
                 max_err = max(p1_data['errorLeadToGoal'], p2_data['errorLeadToGoal'], 1)
                 
@@ -935,11 +968,10 @@ with tab3:
                     r=[
                         (p1_data['saves'] / max_sv * 100) if max_sv > 0 else 0,
                         (p1_data['cleanSheet'] / max_cs * 100) if max_cs > 0 else 0,
-                        (p1_data['highClaims'] / max_hc * 100) if max_hc > 0 else 0,
                         (alb1 / max_alb * 100) if max_alb > 0 else 0,
                         ((max_err - p1_data['errorLeadToGoal']) / max_err * 100) if max_err > 0 else 0,
                     ],
-                    theta=['Saves', 'Clean Sheets', 'High Claims', 'Long Balls', 'Error Avoidance'],
+                    theta=['Saves', 'Clean Sheets', 'Long Balls', 'Error Avoidance'],
                     fill='toself',
                     name=player1,
                     line=dict(color='#00D9FF', width=3),
@@ -949,11 +981,10 @@ with tab3:
                     r=[
                         (p2_data['saves'] / max_sv * 100) if max_sv > 0 else 0,
                         (p2_data['cleanSheet'] / max_cs * 100) if max_cs > 0 else 0,
-                        (p2_data['highClaims'] / max_hc * 100) if max_hc > 0 else 0,
                         (alb2 / max_alb * 100) if max_alb > 0 else 0,
                         ((max_err - p2_data['errorLeadToGoal']) / max_err * 100) if max_err > 0 else 0,
                     ],
-                    theta=['Saves', 'Clean Sheets', 'High Claims', 'Long Balls', 'Error Avoidance'],
+                    theta=['Saves', 'Clean Sheets', 'Long Balls', 'Error Avoidance'],
                     fill='toself',
                     name=player2,
                     line=dict(color='#00FF88', width=3),
